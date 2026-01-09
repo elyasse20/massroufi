@@ -1,7 +1,7 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Tabs, router } from 'expo-router';
+import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import { Platform } from 'react-native';
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
@@ -52,24 +52,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="add"
         options={{
-          title: 'Ajouter',
-          tabBarButton: (props) => (
-            <Pressable
-              {...props}
-              onPress={(e) => {
-                 router.push('/modal');
-              }}
-              style={{
-                top: -20,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              <View className="w-16 h-16 bg-blue-600 rounded-full items-center justify-center shadow-lg shadow-blue-400 border-4 border-gray-50 dark:border-slate-900">
-                <FontAwesome name="plus" size={24} color="white" />
-              </View>
-            </Pressable>
-          ),
+          title: 'Add',
+          tabBarIcon: ({ color }) => <TabBarIcon name="plus-circle" color={color} />,
         }}
       />
       <Tabs.Screen
@@ -77,6 +61,13 @@ export default function TabLayout() {
         options={{
           title: 'Objectifs',
           tabBarIcon: ({ color }) => <TabBarIcon name="bullseye" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profil',
+          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
         }}
       />
     </Tabs>
