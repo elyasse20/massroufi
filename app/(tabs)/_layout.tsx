@@ -1,59 +1,85 @@
-import React from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, Tabs } from 'expo-router';
-import { Pressable } from 'react-native';
+import { Tabs, router } from 'expo-router';
+import React from 'react';
+import { Platform, Pressable, View } from 'react-native';
 
-import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
-
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
   color: string;
 }) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
+  return <FontAwesome size={24} style={{ marginBottom: -3 }} {...props} />;
 }
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
-        headerShown: useClientOnlyValue(false, true),
+        headerShown: false,
+        tabBarActiveTintColor: '#2563EB',
+        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarStyle: {
+          backgroundColor: '#ffffff',
+          borderTopWidth: 0,
+          height: 60,
+          paddingBottom: 10,
+          paddingTop: 10,
+          position: 'absolute',
+          bottom: 20,
+          left: 20,
+          right: 20,
+          borderRadius: 25,
+          ...Platform.select({
+            ios: {
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 10 },
+              shadowOpacity: 0.1,
+              shadowRadius: 10,
+            },
+            android: {
+              elevation: 5,
+            },
+          }),
+        },
+        tabBarShowLabel: false,
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? 'light'].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
+          title: 'Accueil',
+          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="add"
+        options={{
+          title: 'Ajouter',
+          tabBarButton: (props) => (
+            <Pressable
+              {...props}
+              onPress={(e) => {
+                 router.push('/modal');
+              }}
+              style={{
+                top: -20,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <View className="w-16 h-16 bg-blue-600 rounded-full items-center justify-center shadow-lg shadow-blue-400 border-4 border-gray-50 dark:border-slate-900">
+                <FontAwesome name="plus" size={24} color="white" />
+              </View>
+            </Pressable>
           ),
         }}
       />
       <Tabs.Screen
-        name="two"
+        name="goals"
         options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: 'Objectifs',
+          tabBarIcon: ({ color }) => <TabBarIcon name="bullseye" color={color} />,
         }}
       />
     </Tabs>
   );
 }
+
