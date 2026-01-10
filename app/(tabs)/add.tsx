@@ -77,13 +77,17 @@ export default function AddExpenseScreen() {
         type: 'expense' // Defaulting to expense for now
       });
 
-      // Budget Check Logic
-      const budget = await getUserBudget(user.uid);
-      if (budget) {
-        const totalExpenses = await getMonthlyExpenses(user.uid);
-        if (totalExpenses >= budget * 0.8) {
-          Alert.alert("Warning", `You have reached ${Math.round((totalExpenses/budget)*100)}% of your budget!`);
+      // Budget Check Logic (Non-blocking)
+      try {
+        const budget = await getUserBudget(user.uid);
+        if (budget) {
+          const totalExpenses = await getMonthlyExpenses(user.uid);
+          if (totalExpenses >= budget * 0.8) {
+            Alert.alert("Warning", `You have reached ${Math.round((totalExpenses/budget)*100)}% of your budget!`);
+          }
         }
+      } catch (budgetError) {
+        console.log("Budget check failed silently:", budgetError);
       }
 
       Alert.alert('Success', 'Transaction added', [
