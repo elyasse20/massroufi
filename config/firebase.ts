@@ -3,6 +3,7 @@ import { Firestore, getFirestore, initializeFirestore } from "firebase/firestore
 // @ts-ignore
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Auth, getAuth, getReactNativePersistence, initializeAuth } from "firebase/auth";
+import { FirebaseStorage, getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDlPEUzpsjmklxDPSnNmhT8FCqmom6qveM",
@@ -17,28 +18,32 @@ const firebaseConfig = {
 let app: FirebaseApp;
 let auth: Auth;
 let db: Firestore;
+let storage: FirebaseStorage; // Added type
 
 try {
   if (!getApps().length) {
     app = initializeApp(firebaseConfig);
     
     // Initialize Auth with AsyncStorage Persistence
-    // This fixes the warning and ensures user stays logged in
     auth = initializeAuth(app, {
       persistence: getReactNativePersistence(AsyncStorage)
     });
 
-    // Initialize Firestore with default settings for better compatibility
+    // Initialize Firestore
     db = initializeFirestore(app, {});
+    
+    // Initialize Storage
+    storage = getStorage(app); // Added init
   } else {
     app = getApp();
     auth = getAuth(app);
     db = getFirestore(app);
+    storage = getStorage(app); // Added get
   }
 } catch (error) {
   console.error("Firebase Initialization Error:", error);
   throw error;
 }
 
-export { auth, db };
+export { auth, db, storage }; // Added export
 

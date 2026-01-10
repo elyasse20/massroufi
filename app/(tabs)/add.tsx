@@ -13,11 +13,18 @@ import { getUserBudget } from '../../services/userService';
 export default function AddExpenseScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  /* ... inside AddExpenseScreen ... */
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
   const [loading, setLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
+  const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ visible: true, message, type });
+    setTimeout(() => setToast(t => ({ ...t, visible: false })), 3000);
+  };
 
   const scanReceipt = async () => {
     // 1. Request Permission
@@ -51,7 +58,7 @@ export default function AddExpenseScreen() {
       setCategory('Food'); // Guess category
       setScanning(false);
       
-      Alert.alert('Scan Complete', `Detected Amount: ${mockAmount} DH`);
+      showToast(`Scan Complete: Detected ${mockAmount} DH`);
     }, 2000);
   };
 
@@ -90,11 +97,20 @@ export default function AddExpenseScreen() {
         console.log("Budget check failed silently:", budgetError);
       }
 
-      Alert.alert('Success', 'Transaction added', [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
+      showToast('Transaction added successfully! 🎉');
+
+      // Clear Form
+      setAmount('');
+      setDescription('');
+      setCategory('');
+      
+      // Delay navigation back so user sees the toast
+      setTimeout(() => {
+        router.replace('/');
+      }, 1500);
+
     } catch (error) {
-      Alert.alert('Error', 'Failed to save transaction');
+      showToast('Failed to save transaction', 'error');
     } finally {
       setLoading(false);
     }
@@ -103,6 +119,15 @@ export default function AddExpenseScreen() {
   return (
     <View className="flex-1 bg-gray-50 p-6">
       <StatusBar style="dark" />
+      
+      {/* Toast Notification */}
+      {toast.visible && (
+        <View className={`absolute top-12 left-5 right-5 z-50 rounded-2xl flex-row items-center p-4 shadow-lg ${toast.type === 'error' ? 'bg-red-500' : 'bg-emerald-500'}`}>
+          <FontAwesome name={toast.type === 'success' ? 'check-circle' : 'exclamation-circle'} size={24} color="white" />
+          <Text className="text-white font-semibold ml-3 text-base">{toast.message}</Text>
+        </View>
+      )}
+
       <View className="pt-10 mb-6 flex-row justify-between items-center">
         <Text className="text-3xl font-bold text-gray-900">Add Expense</Text>
         <TouchableOpacity 

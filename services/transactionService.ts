@@ -150,3 +150,53 @@ export const getMonthlyExpenses = async (userId: string): Promise<number> => {
 
   return total;
 };
+
+export const deleteTransaction = async (id: string) => {
+  // 1. Optimistic Local Delete
+  await storageService.updateItemInList(LOCAL_KEY, { id, _deleted: true }); // Mark as deleted locally or remove
+  // Better approach for array: get, filter, save. storageService.updateItemInList might not be designed for delete.
+  // Let's implement a direct list manipulation for delete to be safe given current storageService
+  
+  const localData = await storageService.getLocal(LOCAL_KEY) || [];
+  const newData = localData.filter((t: any) => t.id !== id);
+  await storageService.saveLocal(LOCAL_KEY, newData);
+  
+  notifyListeners();
+
+  // 2. Network Delete
+  try {
+    const { deleteDoc, doc } = require('firebase/firestore');
+    await deleteDoc(doc(db, COLLECTION_NAME, id));
+  } catch (error) {
+    console.warn("Offline mode: Transaction delete failed remotely.", error);
+    // TODO: Sync queue handling would go here
+  }
+};
+
+export const updateTransaction = async (transaction: Transaction) => {
+  if (!transaction.id) return;
+
+  // 1. Optimistic Local Update
+  // Ensure date is string for storage
+  const localTransaction = {
+    ...transaction,
+    date: transaction.date instanceof Date ? transaction.date.toISOString() : transaction.date
+  };
+  
+  await storageService.updateItemInList(LOCAL_KEY, localTransaction);
+  notifyListeners();
+
+  // 2. Network Update
+  try {
+    const { updateDoc, doc } = require('firebase/firestore');
+    const transactionRef = doc(db, COLLECTION_NAME, transaction.id);
+    // Convert Date back to Timestamp or Date for Firestore
+    const firestoreData = {
+      ...transaction,
+      date: transaction.date instanceof Date ? transaction.date : new Date(transaction.date as any)
+    };
+    await updateDoc(transactionRef, firestoreData);
+  } catch (error) {
+    console.warn("Offline mode: Transaction update failed remotely.", error);
+  }
+};
