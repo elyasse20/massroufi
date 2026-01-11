@@ -46,7 +46,10 @@
     "expenses_analysis": "Analyse des Dépenses",
     "recent_transactions": "Transactions Récentes",
     "see_all": "Voir Tout",
-    "load_more": "Charger Plus"
+    "load_more": "Charger Plus",
+    "critical_alert": "Alerte Critique",
+    "edit_transaction": "Modifier la Transaction",
+    "save_changes": "Enregistrer"
   },
   "stats": {
     "title": "Statistiques",
@@ -82,7 +85,12 @@
     "scan_receipt": "Scanner un Reçu",
     "missing_fields": "Veuillez remplir tous les champs",
     "success_msg": "Transaction ajoutée avec succès ! 🎉",
-    "budget_warning": "Vous avez atteint {{percent}}% de votre budget !"
+    "budget_warning": "Vous avez atteint {{percent}}% de votre budget !",
+    "custom_category_title": "Catégorie Personnalisée",
+    "custom_category_sub": "Créez votre propre catégorie",
+    "category_name_label": "NOM DE LA CATÉGORIE",
+    "category_name_placeholder": "ex. Sport, Freelance, Cadeaux...",
+    "color_code": "CODE COULEUR"
   },
   "goals": {
     "title": "Objectifs Financiers",
@@ -104,5 +112,21 @@
     "add_funds_placeholder": "Montant à ajouter (DH)",
     "awesome": "Génial !",
     "completed": "Terminé"
+  },
+  "analysis": {
+    "set_budget": "Définissez un budget dans le Profil pour obtenir des conseils intelligents !",
+    "safe": "Bon travail ! Vous êtes sur la bonne voie pour économiser ce mois-ci.",
+    "warning": "Attention ! Vous dépensez un peu plus vite que la moyenne quotidienne.",
+    "critical": "Critique ! À ce rythme, vous n'aurez plus d'argent dans {{days}} jours. Arrêtez de dépenser !"
+  },
+  "categories": {
+    "food": "Nourriture",
+    "transport": "Transport",
+    "shopping": "Shopping",
+    "bills": "Factures",
+    "fun": "Loisirs",
+    "health": "Santé",
+    "education": "Éducation",
+    "other": "Autre"
   }
 }

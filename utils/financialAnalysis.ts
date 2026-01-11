@@ -1,6 +1,7 @@
 export interface SpendingHealth {
   status: 'Safe' | 'Warning' | 'Danger';
-  message: string;
+  messageKey: string;
+  messageParams?: Record<string, any>;
   color: string;
 }
 
@@ -13,7 +14,7 @@ export const calculateSpendingHealth = (totalBudget: number, totalExpenses: numb
   if (totalBudget <= 0) {
     return {
       status: 'Warning',
-      message: 'Set a budget in Profile to get smart advice!',
+      messageKey: 'analysis.set_budget',
       color: '#fbbf24' // amber-400
     };
   }
@@ -30,19 +31,19 @@ export const calculateSpendingHealth = (totalBudget: number, totalExpenses: numb
   if (totalExpenses <= safeThreshold) {
     return {
       status: 'Safe',
-      message: 'Great job! You are on track to save money this month.',
+      messageKey: 'analysis.safe',
       color: '#10b981' // emerald-500
     };
   } else if (totalExpenses <= warningThreshold) {
     return {
       status: 'Safe', // Still relatively safe
-      message: 'Great job! You are on track to save money this month.',
+      messageKey: 'analysis.safe',
       color: '#34d399' // emerald-400
     };
   } else if (totalExpenses <= dangerThreshold) {
     return {
       status: 'Warning',
-      message: 'Careful! You are spending slightly faster than the daily average.',
+      messageKey: 'analysis.warning',
       color: '#fbbf24' // amber-400
     };
   } else {
@@ -54,7 +55,8 @@ export const calculateSpendingHealth = (totalBudget: number, totalExpenses: numb
 
     return {
       status: 'Danger',
-      message: `Critical! At this pace, you will run out of money in ${daysLeft} days. Stop spending!`,
+      messageKey: 'analysis.critical',
+      messageParams: { days: daysLeft },
       color: '#ef4444' // red-500
     };
   }

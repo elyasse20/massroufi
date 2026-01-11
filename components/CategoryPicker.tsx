@@ -1,5 +1,6 @@
 import { FontAwesome } from '@expo/vector-icons';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const CATEGORIES = [
@@ -24,6 +25,7 @@ interface CategoryPickerProps {
 }
 
 export default function CategoryPicker({ selectedCategory, onSelectCategory }: CategoryPickerProps) {
+  const { t } = useTranslation();
   const [modalVisible, setModalVisible] = useState(false);
   const [customName, setCustomName] = useState('');
   const [customColor, setCustomColor] = useState(COLORS[0]);
@@ -46,7 +48,7 @@ export default function CategoryPicker({ selectedCategory, onSelectCategory }: C
 
   return (
     <View className="mb-4">
-      <Text className="text-gray-700 font-medium mb-2 ml-1">Category</Text>
+      <Text className="text-gray-700 font-medium mb-2 ml-1">{t('common.category')}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
         {CATEGORIES.map((cat) => (
           <TouchableOpacity
@@ -63,7 +65,7 @@ export default function CategoryPicker({ selectedCategory, onSelectCategory }: C
                 selectedCategory === cat.label ? 'text-white' : 'text-gray-700'
               } font-medium`}
             >
-              {cat.icon} {cat.label}
+              {cat.icon} {t(`categories.${cat.id}`)}
             </Text>
           </TouchableOpacity>
         ))}
@@ -78,14 +80,14 @@ export default function CategoryPicker({ selectedCategory, onSelectCategory }: C
       >
         <View className="flex-1 justify-center items-center bg-black/50 p-6">
           <View className="bg-white rounded-3xl p-6 w-full shadow-xl">
-            <Text className="text-xl font-bold text-gray-800 mb-1 text-center">Custom Category</Text>
-            <Text className="text-sm text-gray-500 mb-6 text-center">Create your own category</Text>
+            <Text className="text-xl font-bold text-gray-800 mb-1 text-center">{t('add.custom_category_title')}</Text>
+            <Text className="text-sm text-gray-500 mb-6 text-center">{t('add.custom_category_sub')}</Text>
 
             <View className="mb-6">
-              <Text className="text-xs font-bold text-gray-400 uppercase mb-2">Category Name</Text>
+              <Text className="text-xs font-bold text-gray-400 uppercase mb-2">{t('add.category_name_label')}</Text>
               <TextInput
                 className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-800 font-medium"
-                placeholder="e.g. Gym, Freelance, Gifts..."
+                placeholder={t('add.category_name_placeholder')}
                 value={customName}
                 onChangeText={setCustomName}
                 autoFocus
@@ -93,7 +95,7 @@ export default function CategoryPicker({ selectedCategory, onSelectCategory }: C
             </View>
 
             <View className="mb-8">
-              <Text className="text-xs font-bold text-gray-400 uppercase mb-3">Color Code</Text>
+              <Text className="text-xs font-bold text-gray-400 uppercase mb-3">{t('add.color_code')}</Text>
               <View className="flex-row flex-wrap justify-between gap-y-4">
                 {COLORS.map((color) => (
                   <TouchableOpacity
@@ -115,13 +117,13 @@ export default function CategoryPicker({ selectedCategory, onSelectCategory }: C
                 onPress={() => setModalVisible(false)}
                 className="flex-1 bg-gray-100 p-4 rounded-xl items-center"
               >
-                <Text className="text-gray-600 font-bold">Cancel</Text>
+                <Text className="text-gray-600 font-bold">{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={saveCustomCategory}
                 className="flex-1 bg-blue-600 p-4 rounded-xl items-center shadow-lg shadow-blue-200"
               >
-                <Text className="text-white font-bold">Save</Text>
+                <Text className="text-white font-bold">{t('common.save')}</Text>
               </TouchableOpacity>
             </View>
           </View>

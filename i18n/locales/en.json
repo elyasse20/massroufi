@@ -46,7 +46,10 @@
     "expenses_analysis": "Expenses Analysis",
     "recent_transactions": "Recent Transactions",
     "see_all": "See All",
-    "load_more": "Load More"
+    "load_more": "Load More",
+    "critical_alert": "Critical Alert",
+    "edit_transaction": "Edit Transaction",
+    "save_changes": "Save Changes"
   },
   "stats": {
     "title": "Statistics",
@@ -82,7 +85,12 @@
     "scan_receipt": "Scan Receipt",
     "missing_fields": "Please fill in all fields",
     "success_msg": "Transaction added successfully! 🎉",
-    "budget_warning": "You have reached {{percent}}% of your budget!"
+    "budget_warning": "You have reached {{percent}}% of your budget!",
+    "custom_category_title": "Custom Category",
+    "custom_category_sub": "Create your own category",
+    "category_name_label": "CATEGORY NAME",
+    "category_name_placeholder": "e.g. Gym, Freelance, Gifts...",
+    "color_code": "COLOR CODE"
   },
   "goals": {
     "title": "Financial Goals",
@@ -104,5 +112,21 @@
     "add_funds_placeholder": "Amount to add (DH)",
     "awesome": "Awesome!",
     "completed": "Completed"
+  },
+  "analysis": {
+    "set_budget": "Set a budget in Profile to get smart advice!",
+    "safe": "Great job! You are on track to save money this month.",
+    "warning": "Careful! You are spending slightly faster than the daily average.",
+    "critical": "Critical! At this pace, you will run out of money in {{days}} days. Stop spending!"
+  },
+  "categories": {
+    "food": "Food",
+    "transport": "Transport",
+    "shopping": "Shopping",
+    "bills": "Bills",
+    "fun": "Fun",
+    "health": "Health",
+    "education": "Education",
+    "other": "Other"
   }
 }

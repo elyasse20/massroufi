@@ -458,7 +458,7 @@ export default function TabOneScreen() {
             <View className="flex-1 justify-end bg-black/50">
               <View className="bg-white dark:bg-slate-900 rounded-t-3xl p-6">
                 <View className="flex-row justify-between items-center mb-6">
-                  <Text className="text-xl font-bold text-slate-800 dark:text-white">Edit Transaction</Text>
+                  <Text className="text-xl font-bold text-slate-800 dark:text-white">{t('home.edit_transaction')}</Text>
                   <TouchableOpacity onPress={() => setEditModalVisible(false)}>
                     <FontAwesome name="close" size={24} color="#9CA3AF" />
                   </TouchableOpacity>
@@ -466,7 +466,7 @@ export default function TabOneScreen() {
 
                 <View className="space-y-4 mb-6">
                    <View>
-                      <Text className="text-sm font-medium text-slate-500 mb-1">Amount</Text>
+                      <Text className="text-sm font-medium text-slate-500 mb-1">{t('common.amount')}</Text>
                       <TextInput 
                           value={editAmount}
                           onChangeText={setEditAmount}
@@ -475,7 +475,7 @@ export default function TabOneScreen() {
                       />
                    </View>
                    <View>
-                      <Text className="text-sm font-medium text-slate-500 mb-1">Description</Text>
+                      <Text className="text-sm font-medium text-slate-500 mb-1">{t('common.description')}</Text>
                       <TextInput 
                           value={editDescription}
                           onChangeText={setEditDescription}
@@ -484,7 +484,7 @@ export default function TabOneScreen() {
                    </View>
                    {/* Simplified Category Input for now, can be upgraded to Picker */}
                    <View>
-                      <Text className="text-sm font-medium text-slate-500 mb-1">Category</Text>
+                      <Text className="text-sm font-medium text-slate-500 mb-1">{t('common.category')}</Text>
                       <TextInput 
                           value={editCategory}
                           onChangeText={setEditCategory}
@@ -501,14 +501,14 @@ export default function TabOneScreen() {
                     }}
                     className="flex-1 bg-red-100 p-4 rounded-xl items-center"
                   >
-                    <Text className="text-red-600 font-bold">Delete</Text>
+                    <Text className="text-red-700 font-bold">{t('common.delete')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity 
                     onPress={handleUpdate}
                     className="flex-2 bg-blue-600 p-4 rounded-xl items-center flex-grow"
                     style={{flex: 2}}
                   >
-                    <Text className="text-white font-bold">Save Changes</Text>
+                    <Text className="text-white font-bold">{t('home.save_changes')}</Text>
                   </TouchableOpacity>
                 </View>
               </View>

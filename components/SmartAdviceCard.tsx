@@ -1,6 +1,7 @@
 import { SpendingHealth } from '@/utils/financialAnalysis';
 import { FontAwesome } from '@expo/vector-icons';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 interface SmartAdviceCardProps {
@@ -8,6 +9,7 @@ interface SmartAdviceCardProps {
 }
 
 export const SmartAdviceCard = ({ spendingHealth }: SmartAdviceCardProps) => {
+  const { t } = useTranslation();
   return (
     <View 
       style={[
@@ -29,12 +31,12 @@ export const SmartAdviceCard = ({ spendingHealth }: SmartAdviceCardProps) => {
             style={{ color: spendingHealth.color }}
             className="text-lg font-bold ml-3"
          >
-           {spendingHealth.status === 'Safe' ? 'On Track' : 
-            spendingHealth.status === 'Warning' ? 'Warning' : 'Critical Alert'}
+            {spendingHealth.status === 'Safe' ? t('home.on_track') : 
+            spendingHealth.status === 'Warning' ? t('home.warning') : t('home.critical_alert')}
          </Text>
       </View>
       <Text className="text-gray-700 dark:text-gray-300 text-[15px] leading-6 mt-1">
-        {spendingHealth.message}
+        {t(spendingHealth.messageKey, spendingHealth.messageParams)}
       </Text>
     </View>
   );

@@ -309,7 +309,8 @@ export default function GoalsScreen() {
               <FontAwesome name="tag" size={16} color="#94A3B8" style={{marginRight: 10}} />
               <TextInput
                 style={styles.input}
-                placeholder="Goal Name (e.g. Travel)"
+                // @ts-ignore
+                placeholder={t('goals.goal_name')}
                 placeholderTextColor="#94A3B8"
                 value={newGoalName}
                 onChangeText={setNewGoalName}
