@@ -284,7 +284,7 @@ export default function TabOneScreen() {
       )}
 
       <ScrollView 
-        contentContainerStyle={{ padding: 24, paddingTop: 60 }}
+        contentContainerStyle={{ padding: 24, paddingTop: 60, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
         <View className="flex-row justify-between items-start mb-6">

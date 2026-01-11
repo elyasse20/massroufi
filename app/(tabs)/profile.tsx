@@ -223,6 +223,23 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Subscriptions Entry */}
+        <TouchableOpacity 
+          onPress={() => require('expo-router').router.push('/subscriptions')}
+          className="bg-indigo-50 p-5 rounded-3xl flex-row items-center justify-between mb-6 border border-indigo-100"
+        >
+           <View className="flex-row items-center">
+              <View className="bg-indigo-100 p-2 rounded-xl mr-3">
+                 <FontAwesome name="refresh" size={20} color="#4F46E5" />
+              </View>
+              <View>
+                 <Text className="text-lg font-bold text-slate-800">Monthly Subscriptions</Text>
+                 <Text className="text-slate-500 text-sm">Manage recurring expenses</Text>
+              </View>
+           </View>
+           <FontAwesome name="chevron-right" size={16} color="#94A3B8" />
+        </TouchableOpacity>
+
 
 
         <TouchableOpacity 
