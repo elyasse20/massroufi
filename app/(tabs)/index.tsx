@@ -39,8 +39,11 @@ const CATEGORY_COLORS: Record<string, string> = {
   'Other': '#9CA3AF'
 };
 
+import { useTranslation } from 'react-i18next'; // Import useTranslation
+
 export default function TabOneScreen() {
   const router = useRouter();
+  const { t } = useTranslation(); // Hook initialization
   const { user } = useAuth();
   const [listTransactions, setListTransactions] = useState<Transaction[]>([]);
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]); // For Chart/Balance
@@ -289,7 +292,7 @@ export default function TabOneScreen() {
       >
         <View className="flex-row justify-between items-start mb-6">
           <View>
-             <Text className="text-sm text-slate-500 font-medium">Hello,</Text>
+             <Text className="text-sm text-slate-500 font-medium">{t('home.hello')}</Text>
              <Text className="text-2xl font-bold text-slate-800">
                {user?.displayName || user?.email?.split('@')[0]}
              </Text> 
@@ -310,7 +313,7 @@ export default function TabOneScreen() {
           className="rounded-3xl p-6 mb-6 shadow-lg relative overflow-hidden"
         >
           <View className="flex-row justify-between mb-2">
-             <Text className="text-indigo-100 text-sm font-medium">Total Balance</Text>
+             <Text className="text-indigo-100 text-sm font-medium">{t('home.total_balance')}</Text>
              <FontAwesome name="cc-visa" size={24} color="rgba(255,255,255,0.8)" />
           </View>
           <Text className="text-white text-4xl font-bold mb-5">
@@ -322,7 +325,7 @@ export default function TabOneScreen() {
             className="bg-white/20 px-4 py-2.5 rounded-full self-start flex-row items-center border border-white/30"
           >
              <FontAwesome name="download" size={14} color="white" style={{marginRight: 8}}/>
-             <Text className="text-white font-semibold text-sm">Monthly Report</Text>
+             <Text className="text-white font-semibold text-sm">{t('home.monthly_report')}</Text>
           </TouchableOpacity>
 
           <View className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full pointer-events-none" />
@@ -336,9 +339,9 @@ export default function TabOneScreen() {
         {/* Chart Section */}
         <View className="mb-8">
           <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-lg font-bold text-slate-800">Expenses Analysis</Text>
+            <Text className="text-lg font-bold text-slate-800">{t('home.expenses_analysis')}</Text>
             <TouchableOpacity>
-               <Text className="text-indigo-600 font-semibold text-sm">This Month</Text>
+               <Text className="text-indigo-600 font-semibold text-sm">{t('home.this_month')}</Text>
             </TouchableOpacity>
           </View>
           {chartData.length > 0 ? (
@@ -363,9 +366,9 @@ export default function TabOneScreen() {
           {/* Recent Transactions List */}
         <View className="mb-10">
           <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-lg font-bold text-slate-800 dark:text-white">Recent Transactions</Text>
+            <Text className="text-lg font-bold text-slate-800 dark:text-white">{t('home.recent_transactions')}</Text>
              <TouchableOpacity onPress={() => { setLimit(20); setFilterCategory('All'); }}>
-               <Text className="text-indigo-600 dark:text-indigo-400 font-semibold text-sm">See All</Text>
+               <Text className="text-indigo-600 dark:text-indigo-400 font-semibold text-sm">{t('home.see_all')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -439,7 +442,7 @@ export default function TabOneScreen() {
             onPress={() => setLimit(l => l + 5)}
             className="mt-2 py-3 bg-gray-100 dark:bg-slate-800 rounded-xl items-center"
           >
-             <Text className="text-slate-600 dark:text-slate-300 font-semibold">Load More</Text>
+             <Text className="text-slate-600 dark:text-slate-300 font-semibold">{t('home.load_more')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

@@ -10,7 +10,10 @@ import { useAuth } from '../../context/AuthContext';
 import { addTransaction, getMonthlyExpenses } from '../../services/transactionService';
 import { getUserBudget } from '../../services/userService';
 
+import { useTranslation } from 'react-i18next';
+
 export default function AddExpenseScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuth();
   /* ... inside AddExpenseScreen ... */
@@ -37,7 +40,7 @@ export default function AddExpenseScreen() {
     // 1. Request Permission
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission Denied', 'Sorry, we need camera roll permissions to make this work!');
+      Alert.alert(t('common.error'), 'Sorry, we need camera roll permissions to make this work!');
       return;
     }
 
@@ -71,7 +74,7 @@ export default function AddExpenseScreen() {
 
   const handleSave = async () => {
     if (!amount || !description || !category) {
-      Alert.alert('Missing Fields', 'Please fill in all fields');
+      Alert.alert(t('common.error'), t('add.missing_fields'));
       return;
     }
 
@@ -98,14 +101,14 @@ export default function AddExpenseScreen() {
         if (budget) {
           const totalExpenses = await getMonthlyExpenses(user.uid);
           if (totalExpenses >= budget * 0.8) {
-            Alert.alert("Warning", `You have reached ${Math.round((totalExpenses/budget)*100)}% of your budget!`);
+            Alert.alert(t('common.warning'), t('add.budget_warning', { percent: Math.round((totalExpenses/budget)*100) }));
           }
         }
       } catch (budgetError) {
         console.log("Budget check failed silently:", budgetError);
       }
 
-      showToast('Transaction added successfully! 🎉');
+      showToast(t('add.success_msg'));
 
       // Clear Form
       setAmount('');
@@ -138,7 +141,7 @@ export default function AddExpenseScreen() {
       )}
 
       <View className="pt-10 mb-6 flex-row justify-between items-center">
-        <Text className="text-3xl font-bold text-gray-900">Add Expense</Text>
+        <Text className="text-3xl font-bold text-gray-900">{t('add.title')}</Text>
         <TouchableOpacity 
           onPress={scanReceipt}
           disabled={scanning}
@@ -152,7 +155,7 @@ export default function AddExpenseScreen() {
         <View className="bg-white p-6 rounded-2xl shadow-sm space-y-6">
           
           <View>
-            <Text className="text-gray-500 mb-1 ml-1 text-sm uppercase font-bold tracking-wider">Amount</Text>
+            <Text className="text-gray-500 mb-1 ml-1 text-sm uppercase font-bold tracking-wider">{t('add.amount_label')}</Text>
             <View className="flex-row items-center border-b-2 border-gray-100 focus:border-blue-500 py-2">
               <Text className="text-3xl font-bold text-gray-900 mr-2">DH</Text>
               <TextInput
@@ -167,10 +170,10 @@ export default function AddExpenseScreen() {
           </View>
 
           <View>
-            <Text className="text-gray-700 font-medium mb-1 ml-1">Description</Text>
+            <Text className="text-gray-700 font-medium mb-1 ml-1">{t('add.description_label')}</Text>
             <TextInput
               className="w-full bg-gray-50 px-4 py-3 rounded-xl border border-gray-200 text-lg"
-              placeholder="What is this for?"
+              placeholder={t('add.description_placeholder')}
               value={description}
               onChangeText={setDescription}
             />
@@ -186,7 +189,7 @@ export default function AddExpenseScreen() {
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text className="text-white font-bold text-lg">Save Transaction</Text>
+              <Text className="text-white font-bold text-lg">{t('add.save_button')}</Text>
             )}
           </TouchableOpacity>
         </View>

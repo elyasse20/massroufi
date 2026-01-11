@@ -9,7 +9,10 @@ import { useAuth } from '../../context/AuthContext';
 import { Goal, addGoal, deleteGoal, subscribeToGoals, updateGoal, updateGoalProgress } from '../../services/goalsService';
 import { addTransaction } from '../../services/transactionService';
 
+import { useTranslation } from 'react-i18next';
+
 export default function GoalsScreen() {
+  const { t } = useTranslation();
   const { user } = useAuth();
 
   const [goals, setGoals] = useState<Goal[]>([]);
@@ -47,7 +50,7 @@ export default function GoalsScreen() {
 
   const handleSaveGoal = async () => {
     if (!newGoalName || !newGoalTarget) {
-      Alert.alert('Error', 'Please fill all fields');
+      Alert.alert(t('common.error'), t('add.missing_fields'));
       return;
     }
     if (!user) return;
@@ -207,7 +210,7 @@ export default function GoalsScreen() {
                 <Text style={styles.goalName}>{item.name}</Text>
                 {isCompleted && (
                     <View style={styles.completedBadge}>
-                        <Text style={styles.completedText}>Completed</Text>
+                        <Text style={styles.completedText}>{t('goals.completed')}</Text>
                     </View>
                 )}
              </View>
@@ -260,8 +263,8 @@ export default function GoalsScreen() {
       <StatusBar style="dark" />
       <View style={styles.header}>
         <View>
-           <Text style={styles.title}>Financial Goals</Text>
-           <Text style={styles.subtitle}>Track your dreams</Text>
+           <Text style={styles.title}>{t('goals.title')}</Text>
+           <Text style={styles.subtitle}>{t('goals.subtitle')}</Text>
         </View>
         <TouchableOpacity onPress={openAddModal} style={styles.addButton}>
           <LinearGradient
@@ -285,8 +288,8 @@ export default function GoalsScreen() {
             <View style={styles.emptyIconContainer}>
                <FontAwesome name="flag-o" size={40} color="#CBD5E1" />
             </View>
-            <Text style={styles.emptyText}>No goals set yet.</Text>
-            <Text style={styles.emptySubText}>Start saving for something special!</Text>
+            <Text style={styles.emptyText}>{t('goals.empty')}</Text>
+            <Text style={styles.emptySubText}>{t('goals.empty_sub')}</Text>
           </View>
         }
       />
@@ -299,8 +302,8 @@ export default function GoalsScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>{editingGoal ? 'Edit Goal' : 'New Goal'}</Text>
-            <Text style={styles.modalSubtitle}>{editingGoal ? 'Update your goal details' : 'What are you saving for?'}</Text>
+            <Text style={styles.modalTitle}>{editingGoal ? t('goals.edit_goal') : t('goals.new_goal')}</Text>
+            <Text style={styles.modalSubtitle}>{editingGoal ? t('common.edit') : t('goals.subtitle')}</Text>
             
             <View style={styles.inputContainer}>
               <FontAwesome name="tag" size={16} color="#94A3B8" style={{marginRight: 10}} />
@@ -317,7 +320,7 @@ export default function GoalsScreen() {
                <FontAwesome name="money" size={16} color="#94A3B8" style={{marginRight: 10}} />
               <TextInput
                 style={styles.input}
-                placeholder="Target Amount (DH)"
+                placeholder={t('goals.target_amount')}
                 placeholderTextColor="#94A3B8"
                 keyboardType="numeric"
                 value={newGoalTarget}
@@ -333,7 +336,7 @@ export default function GoalsScreen() {
                   resetForm();
                 }}
               >
-                <Text style={styles.buttonCancelText}>Cancel</Text>
+                <Text style={styles.buttonCancelText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.buttonSave}
@@ -344,7 +347,7 @@ export default function GoalsScreen() {
                   colors={['#4F46E5', '#3B82F6']}
                   style={styles.buttonSaveGradient}
                 >
-                  <Text style={styles.buttonSaveText}>{editingGoal ? 'Update Goal' : 'Create Goal'}</Text>
+                  <Text style={styles.buttonSaveText}>{editingGoal ? t('goals.update_button') : t('goals.create_button')}</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -365,10 +368,9 @@ export default function GoalsScreen() {
                <View style={{width: 50, height: 50, borderRadius: 25, backgroundColor: '#FEE2E2', justifyContent: 'center', alignItems: 'center', marginBottom: 12}}>
                   <FontAwesome name="trash" size={24} color="#EF4444" />
                </View>
-               <Text style={styles.modalTitle}>Delete Goal</Text>
+               <Text style={styles.modalTitle}>{t('common.delete')}</Text>
                <Text style={styles.modalSubtitle}>
-                 Are you sure you want to delete <Text style={{fontWeight: 'bold', color: '#1E293B'}}>"{goalToDelete?.name}"</Text>?{' \n'}
-                 This action cannot be undone.
+                 {t('goals.delete_confirm', { name: goalToDelete?.name })}{' \n'}
                </Text>
             </View>
 
@@ -377,7 +379,7 @@ export default function GoalsScreen() {
                 style={styles.buttonCancel}
                 onPress={() => setDeleteModalVisible(false)}
               >
-                <Text style={styles.buttonCancelText}>Cancel</Text>
+                <Text style={styles.buttonCancelText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.buttonSave, { shadowColor: '#EF4444' }]}
@@ -386,7 +388,7 @@ export default function GoalsScreen() {
                 <View
                   style={[styles.buttonSaveGradient, { backgroundColor: '#EF4444' }]}
                 >
-                  <Text style={styles.buttonSaveText}>Delete</Text>
+                  <Text style={styles.buttonSaveText}>{t('common.delete')}</Text>
                 </View>
               </TouchableOpacity>
             </View>
@@ -403,14 +405,14 @@ export default function GoalsScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalView, { borderLeftWidth: 6, borderLeftColor: '#10B981' }]}>
-            <Text style={styles.modalTitle}>Add Funds</Text>
-            <Text style={styles.modalSubtitle}>Add money to "{goalToAddFunds?.name}"</Text>
+            <Text style={styles.modalTitle}>{t('goals.add_funds')}</Text>
+            <Text style={styles.modalSubtitle}>{t('goals.add_funds_title', { name: goalToAddFunds?.name })}</Text>
             
             <View style={styles.inputContainer}>
               <FontAwesome name="money" size={16} color="#94A3B8" style={{marginRight: 10}} />
               <TextInput
                 style={styles.input}
-                placeholder="Amount to add (DH)"
+                placeholder={t('goals.add_funds_placeholder') || "Amount to add (DH)"}
                 placeholderTextColor="#94A3B8"
                 keyboardType="numeric"
                 value={addFundsAmount}
@@ -427,7 +429,7 @@ export default function GoalsScreen() {
                   setAddFundsAmount('');
                 }}
               >
-                <Text style={styles.buttonCancelText}>Cancel</Text>
+                <Text style={styles.buttonCancelText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.buttonSave}
@@ -437,7 +439,7 @@ export default function GoalsScreen() {
                   colors={['#10B981', '#059669']}
                   style={styles.buttonSaveGradient}
                 >
-                  <Text style={styles.buttonSaveText}>Add Funds</Text>
+                  <Text style={styles.buttonSaveText}>{t('goals.add_funds')}</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -456,9 +458,9 @@ export default function GoalsScreen() {
           <View style={[styles.modalView, { backgroundColor: '#F0F9FF', borderColor: '#3B82F6', borderWidth: 2 }]}>
             <View style={{ alignItems: 'center' }}>
                <Text style={{ fontSize: 60, marginBottom: 10 }}>🎉🏆🎉</Text>
-               <Text style={[styles.modalTitle, { color: '#2563EB', fontSize: 26 }]}>CONGRATULATIONS!</Text>
+               <Text style={[styles.modalTitle, { color: '#2563EB', fontSize: 26 }]}>{t('goals.congrats_title')}</Text>
                <Text style={[styles.modalSubtitle, { marginBottom: 20 }]}>
-                 You've reached your goal:
+                 {t('goals.congrats_desc')}
                </Text>
                <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1E293B', marginBottom: 20, textAlign: 'center' }}>
                  "{celebratedGoal?.name}"

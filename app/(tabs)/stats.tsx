@@ -44,7 +44,10 @@ const CATEGORY_ICONS: Record<string, string> = {
     'Other': 'ellipsis-h'
 };
 
+import { useTranslation } from 'react-i18next';
+
 export default function StatsScreen() {
+  const { t } = useTranslation();
   const { user } = useAuth();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -114,19 +117,19 @@ export default function StatsScreen() {
   return (
     <View className="flex-1 bg-gray-50 pt-10">
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
-        <Text className="text-3xl font-bold text-slate-800 px-6 py-6 mt-4">Statistics</Text>
+        <Text className="text-3xl font-bold text-slate-800 px-6 py-6 mt-4">{t('stats.title')}</Text>
 
         {/* 1. Budget Overview Card */}
         <View className="px-6 mb-6">
            <View className="bg-indigo-600 rounded-3xl p-6 shadow-lg shadow-indigo-200">
               <View className="flex-row justify-between items-center mb-2">
-                 <Text className="text-white/80 font-medium">Monthly Budget</Text>
+                 <Text className="text-white/80 font-medium">{t('stats.monthly_budget')}</Text>
                  <Text className="text-white font-bold text-lg">
                     {monthlyBudget > 0 ? ((totalExpenses / monthlyBudget) * 100).toFixed(0) : 0}%
                  </Text>
               </View>
               <Text className="text-white text-3xl font-bold mb-4">
-                 {totalExpenses.toFixed(0)} <Text className="text-lg text-white/70">/ {monthlyBudget} DH</Text>
+                 {totalExpenses.toFixed(0)} <Text className="text-lg text-white/70">/ {monthlyBudget} {t('common.dh')}</Text>
               </Text>
               {/* Progress Bar */}
               <View className="h-2 bg-black/20 rounded-full overflow-hidden">
@@ -165,7 +168,7 @@ export default function StatsScreen() {
 
         {/* Weekly Trend Chart */}
         <View className="px-6 mb-8">
-            <Text className="text-lg font-bold text-slate-700 mb-4">Spending Trend (Last 7 Days)</Text>
+            <Text className="text-lg font-bold text-slate-700 mb-4">{t('stats.spending_trend')}</Text>
             <View className="bg-white rounded-3xl p-2 shadow-sm items-center overflow-hidden">
                 {weeklyData.some(v => v > 0) ? (
                     <LineChart
@@ -199,7 +202,7 @@ export default function StatsScreen() {
                     />
                 ) : (
                     <View className="h-48 justify-center items-center">
-                        <Text className="text-slate-400">No spending data for this week</Text>
+                        <Text className="text-slate-400">{t('stats.no_data_week')}</Text>
                     </View>
                 )}
             </View>
@@ -207,7 +210,7 @@ export default function StatsScreen() {
 
         {/* Top Spending Categories */}
         <View className="px-6">
-            <Text className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-4">Expenses by Category</Text>
+            <Text className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-4">{t('stats.expenses_by_category')}</Text>
             {categoryData.length > 0 ? (
                 categoryData.map(cat => (
                     <View key={cat.name} className="mb-4 bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm">
@@ -221,7 +224,7 @@ export default function StatsScreen() {
                                 </View>
                                 <Text className="font-bold text-slate-700 dark:text-slate-200 text-base">{cat.name}</Text>
                             </View>
-                            <Text className="font-bold text-slate-900 dark:text-white text-base">{cat.total.toFixed(0)} DH</Text>
+                            <Text className="font-bold text-slate-900 dark:text-white text-base">{cat.total.toFixed(0)} {t('common.dh')}</Text>
                         </View>
                         {/* Progress Bar */}
                         <View className="h-2 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden mt-1">
@@ -234,7 +237,7 @@ export default function StatsScreen() {
                 ))
             ) : (
                 <View className="items-center py-10">
-                    <Text className="text-slate-400">No expenses recorded yet.</Text>
+                    <Text className="text-slate-400">{t('stats.no_expenses')}</Text>
                 </View>
             )}
         </View>
