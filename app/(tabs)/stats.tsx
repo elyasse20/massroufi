@@ -6,6 +6,7 @@ import { Dimensions, ScrollView, Text, View } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { useAuth } from '../../context/AuthContext';
 import { subscribeToTransactions, Transaction } from '../../services/transactionService';
+import { getUserBudget } from '../../services/userService';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -36,6 +37,7 @@ export default function StatsScreen() {
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [monthlyBudget, setMonthlyBudget] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -46,6 +48,8 @@ export default function StatsScreen() {
             setTransactions(data);
             setLoading(false);
         }, 1000);
+
+        getUserBudget(user.uid).then(b => setMonthlyBudget(b || 0));
 
         return () => unsubscribe();
     }, [user])
@@ -99,6 +103,53 @@ export default function StatsScreen() {
     <View className="flex-1 bg-gray-50 pt-10">
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
         <Text className="text-3xl font-bold text-slate-800 px-6 py-6 mt-4">Statistics</Text>
+
+        {/* 1. Budget Overview Card */}
+        <View className="px-6 mb-6">
+           <View className="bg-indigo-600 rounded-3xl p-6 shadow-lg shadow-indigo-200">
+              <View className="flex-row justify-between items-center mb-2">
+                 <Text className="text-white/80 font-medium">Monthly Budget</Text>
+                 <Text className="text-white font-bold text-lg">
+                    {monthlyBudget > 0 ? ((totalExpenses / monthlyBudget) * 100).toFixed(0) : 0}%
+                 </Text>
+              </View>
+              <Text className="text-white text-3xl font-bold mb-4">
+                 {totalExpenses.toFixed(0)} <Text className="text-lg text-white/70">/ {monthlyBudget} DH</Text>
+              </Text>
+              {/* Progress Bar */}
+              <View className="h-2 bg-black/20 rounded-full overflow-hidden">
+                 <View 
+                    className="h-full bg-white rounded-full" 
+                    style={{ width: `${Math.min((totalExpenses / monthlyBudget) * 100, 100)}%` }} 
+                 />
+              </View>
+           </View>
+        </View>
+
+        {/* 2. Key Metrics Row */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-6 mb-8 pl-6" contentContainerStyle={{ paddingRight: 24 }}>
+           {/* Daily Average */}
+           <View className="bg-white p-4 rounded-2xl shadow-sm mr-4 w-40 border border-gray-100">
+              <View className="w-10 h-10 bg-orange-100 rounded-full items-center justify-center mb-3">
+                 <FontAwesome name="calendar" size={18} color="#F97316" />
+              </View>
+              <Text className="text-slate-500 text-xs font-medium mb-1">Daily Average</Text>
+              <Text className="text-slate-800 text-xl font-bold">
+                 {(totalExpenses / new Date().getDate()).toFixed(0)} <Text className="text-xs font-normal">DH</Text>
+              </Text>
+           </View>
+
+           {/* Biggest Transaction */}
+           <View className="bg-white p-4 rounded-2xl shadow-sm mr-4 w-40 border border-gray-100">
+              <View className="w-10 h-10 bg-rose-100 rounded-full items-center justify-center mb-3">
+                 <FontAwesome name="bolt" size={18} color="#E11D48" />
+              </View>
+              <Text className="text-slate-500 text-xs font-medium mb-1">Max Transaction</Text>
+              <Text className="text-slate-800 text-xl font-bold" numberOfLines={1}>
+                 {expenses.length > 0 ? Math.max(...expenses.map(t => t.amount)).toFixed(0) : 0} <Text className="text-xs font-normal">DH</Text>
+              </Text>
+           </View>
+        </ScrollView>
 
         {/* Weekly Trend Chart */}
         <View className="px-6 mb-8">
