@@ -1,7 +1,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { addSubscription, deleteSubscription, subscribeToSubscriptions, Subscription } from '@/services/subscriptionService';
 import { FontAwesome } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, Modal, ScrollView, StatusBar, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -59,6 +59,7 @@ export default function SubscriptionsScreen() {
 
   return (
     <View className="flex-1 bg-gray-50">
+       <Stack.Screen options={{ headerShown: false }} />
        <StatusBar barStyle="dark-content" />
        
        {/* Header */}

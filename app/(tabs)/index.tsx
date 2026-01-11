@@ -340,7 +340,7 @@ export default function TabOneScreen() {
         <View className="mb-8">
           <View className="flex-row justify-between items-center mb-4">
             <Text className="text-lg font-bold text-slate-800">{t('home.expenses_analysis')}</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/stats')}>
                <Text className="text-indigo-600 font-semibold text-sm">{t('home.this_month')}</Text>
             </TouchableOpacity>
           </View>

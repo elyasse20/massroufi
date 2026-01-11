@@ -8,6 +8,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, I18nManager, Image, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import { CustomAlert } from '@/components/CustomAlert';
 import { getUserBudget, setUserBudget } from '@/services/userService';
 import * as ImagePicker from 'expo-image-picker';
 import { updateProfile } from 'firebase/auth';
@@ -31,6 +32,22 @@ export default function ProfileScreen() {
   const [showSignOutModal, setShowSignOutModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [pendingLanguage, setPendingLanguage] = useState<string | null>(null);
+
+  // Toast State
+  const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+      setToast({ visible: true, message, type });
+      setTimeout(() => setToast(t => ({ ...t, visible: false })), 3000);
+  };
+
+  // Custom Alert State
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({ title: '', message: '', type: 'info' as 'success' | 'error' | 'info' });
+
+  const showAlert = (title: string, message: string, type: 'success' | 'error' | 'info' = 'info') => {
+      setAlertConfig({ title, message, type });
+      setAlertVisible(true);
+  };
 
   useEffect(() => {
     if (user) {
@@ -65,9 +82,9 @@ export default function ProfileScreen() {
     setLoadingBudget(true);
     try {
       await setUserBudget(user.uid, parseFloat(budget));
-      Alert.alert('Success', 'Monthly budget updated!');
+      showToast('Monthly budget updated!', 'success');
     } catch (e) {
-      Alert.alert('Error', 'Failed to update budget');
+      showToast('Failed to update budget', 'error');
     } finally {
       setLoadingBudget(false);
     }
@@ -158,7 +175,7 @@ export default function ProfileScreen() {
               await Updates.reloadAsync();
           } catch (reloadError) {
               console.log("Reload failed:", reloadError);
-              Alert.alert(t('profile.title'), t('profile.restart_confirm'));
+              showAlert(t('profile.title'), t('profile.restart_confirm'), 'info');
           }
       } catch (e) {
           console.error(e);
@@ -309,6 +326,19 @@ export default function ProfileScreen() {
 
       </ScrollView>
 
+      {/* Toast Notification */}
+      {toast.visible && (
+        <View 
+            className={`absolute top-10 left-6 right-6 z-50 rounded-2xl flex-row items-center p-4 shadow-lg ${toast.type === 'error' ? 'bg-red-500' : 'bg-emerald-500'}`}
+            style={{ marginTop: insets.top }}
+        >
+          <FontAwesome name={toast.type === 'success' ? 'check-circle' : 'exclamation-circle'} size={24} color="white" />
+          <Text className="text-white font-bold ml-3 text-base flex-1 shadow-black/20" style={{textShadowRadius: 2}}>
+            {toast.message}
+          </Text>
+        </View>
+      )}
+
       {/* Sign Out Modal */}
       <Modal
         animationType="fade"
@@ -378,6 +408,14 @@ export default function ProfileScreen() {
            </View>
         </View>
       </Modal>
+
+      <CustomAlert 
+        visible={alertVisible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        onClose={() => setAlertVisible(false)}
+      />
 
     </View>
   );
