@@ -11,14 +11,20 @@ import { getUserBudget } from '../../services/userService';
 const screenWidth = Dimensions.get('window').width;
 
 const CATEGORY_COLORS: Record<string, string> = {
-  'Food': '#F87171',
-  'Transport': '#60A5FA',
-  'Shopping': '#FBBF24',
-  'Bills': '#34D399',
-  'Fun': '#A78BFA',
-  'Health': '#F472B6',
-  'Education': '#818CF8',
-  'Other': '#9CA3AF'
+  'Food': '#F87171', // Red
+  'Transport': '#60A5FA', // Blue
+  'Shopping': '#FBBF24', // Amber
+  'Bills': '#34D399', // Emerald
+  'Fun': '#A78BFA', // Violet
+  'Health': '#F472B6', // Pink
+  'Education': '#818CF8', // Indigo
+  'Technology': '#2DD4BF', // Teal
+  'Savings': '#4ADE80', // Green
+  'Gym': '#FB7185', // Rose
+  'Gifts': '#F472B6', // Pink
+  'Housing': '#F87171', // Red
+  'Travel': '#0EA5E9', // Sky
+  'Other': '#9CA3AF' // Gray
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -29,6 +35,12 @@ const CATEGORY_ICONS: Record<string, string> = {
     'Fun': 'gamepad',
     'Health': 'medkit',
     'Education': 'book',
+    'Technology': 'laptop',
+    'Savings': 'bank',
+    'Gym': 'heartbeat',
+    'Gifts': 'gift',
+    'Housing': 'home',
+    'Travel': 'plane',
     'Other': 'ellipsis-h'
 };
 
@@ -101,7 +113,7 @@ export default function StatsScreen() {
 
   return (
     <View className="flex-1 bg-gray-50 pt-10">
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
         <Text className="text-3xl font-bold text-slate-800 px-6 py-6 mt-4">Statistics</Text>
 
         {/* 1. Budget Overview Card */}
