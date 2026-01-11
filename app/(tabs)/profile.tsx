@@ -1,15 +1,16 @@
 import { useAuth } from '@/context/AuthContext';
-import { getUserBudget, setUserBudget } from '@/services/userService';
 import { FontAwesome } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Changed import
-import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import * as Updates from 'expo-updates';
-import { updateProfile } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, I18nManager, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, I18nManager, Image, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
+import { getUserBudget, setUserBudget } from '@/services/userService';
+import * as ImagePicker from 'expo-image-picker';
+import { updateProfile } from 'firebase/auth';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
@@ -17,8 +18,6 @@ export default function ProfileScreen() {
   const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
 
-
-  
   const [budget, setBudget] = useState('');
   const [loadingBudget, setLoadingBudget] = useState(false);
   
@@ -28,11 +27,15 @@ export default function ProfileScreen() {
   const [photoURL, setPhotoURL] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
+  // Modal State
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const [pendingLanguage, setPendingLanguage] = useState<string | null>(null);
+
   useEffect(() => {
     if (user) {
       loadBudget();
       setDisplayName(user.displayName || '');
-      // Load local photo if available, otherwise fallback to user.photoURL (which might be null)
       loadLocalPhoto();
     }
   }, [user]);
@@ -49,7 +52,7 @@ export default function ProfileScreen() {
     } catch (e) {
       setPhotoURL(user.photoURL);
     }
-  }
+  };
 
   const loadBudget = async () => {
     if (!user) return;
@@ -123,59 +126,57 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleSignOut = async () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Sign Out", style: "destructive", onPress: signOut }
-    ]);
+  const handleSignOut = () => {
+    setShowSignOutModal(true);
   };
 
-  const changeLanguage = async (lang: string) => {
-      Alert.alert(
-          t('profile.select_language'),
-          'The app needs to restart to apply the new language. Continue?',
-          [
-              { text: t('profile.cancel'), style: 'cancel' },
-              { 
-                  text: 'OK', 
-                  onPress: async () => {
-                      try {
-                          await AsyncStorage.setItem('user-language', lang);
-                          await i18n.changeLanguage(lang);
-                          
-                          const isRTL = lang === 'ar';
-                          // Always set RTL manager to ensure it's correct before reload
-                          I18nManager.allowRTL(isRTL);
-                          I18nManager.forceRTL(isRTL);
+  const confirmSignOut = async () => {
+      setShowSignOutModal(false);
+      signOut();
+  };
 
-                          // Reload the app to apply changes globally
-                          try {
-                              await Updates.reloadAsync();
-                          } catch (reloadError) {
-                              console.log("Reload failed, likely dev mode:", reloadError);
-                              Alert.alert("Restart Required", "Please restart the app manually to apply changes.");
-                          }
-                      } catch (e) {
-                          console.error(e);
-                      }
-                  }
-              }
-          ]
-      );
+  const changeLanguage = (lang: string) => {
+      setPendingLanguage(lang);
+      setShowLanguageModal(true);
+  };
+
+  const confirmLanguageChange = async () => {
+      if (!pendingLanguage) return;
+      
+      const lang = pendingLanguage;
+      setShowLanguageModal(false);
+
+      try {
+          await AsyncStorage.setItem('user-language', lang);
+          await i18n.changeLanguage(lang);
+          
+          const isRTL = lang === 'ar';
+          I18nManager.allowRTL(isRTL);
+          I18nManager.forceRTL(isRTL);
+
+          try {
+              await Updates.reloadAsync();
+          } catch (reloadError) {
+              console.log("Reload failed:", reloadError);
+              Alert.alert(t('profile.title'), t('profile.restart_confirm'));
+          }
+      } catch (e) {
+          console.error(e);
+      }
   };
 
   return (
     <View className="flex-1 bg-gray-50">
-      <StatusBar style="dark" />
-      
-      {/* Header with Gradient */}
+       <StatusBar style="dark" />
+       
+       {/* ... existing header ... */}
       <LinearGradient
         colors={['#4F46E5', '#3B82F6']}
         className="pb-8 px-6 rounded-b-[40px] shadow-lg"
         style={{ paddingTop: insets.top + 20 }}
       >
+        {/* ... header content ... */}
         <View className="items-center">
-          {/* Avatar with Edit Button */}
           <TouchableOpacity onPress={handlePickImage} disabled={uploading}>
             <View className="relative w-28 h-28 bg-white/20 rounded-full items-center justify-center mb-4 border-2 border-white/30 backdrop-blur-sm overflow-hidden">
                {uploading ? (
@@ -187,22 +188,19 @@ export default function ProfileScreen() {
                     {user?.email?.charAt(0).toUpperCase() || 'U'}
                  </Text>
                )}
-               
-               {/* Camera Icon Overlay */}
                <View className="absolute bottom-0 w-full h-8 bg-black/40 items-center justify-center">
                  <FontAwesome name="camera" size={14} color="white" />
                </View>
             </View>
           </TouchableOpacity>
 
-          {/* Name Display / Edit */}
           {isEditing ? (
             <View className="flex-row items-center mb-1 bg-white/20 rounded-lg px-2 py-1">
                <TextInput 
                  value={displayName}
                  onChangeText={setDisplayName}
                  className="text-white text-xl font-bold min-w-[150px] text-center"
-                 placeholder="Enter Name"
+                 placeholder={t('profile.edit_name')}
                  placeholderTextColor="#cbd5e1"
                  autoFocus
                />
@@ -310,6 +308,77 @@ export default function ProfileScreen() {
         </TouchableOpacity>
 
       </ScrollView>
+
+      {/* Sign Out Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showSignOutModal}
+        onRequestClose={() => setShowSignOutModal(false)}
+      >
+        <View className="flex-1 justify-center items-center bg-black/50 p-6">
+          <View className="bg-white rounded-3xl p-6 w-full max-w-sm">
+             <View className="items-center mb-6">
+                <View className="w-16 h-16 bg-red-100 rounded-full justify-center items-center mb-4">
+                   <FontAwesome name="sign-out" size={32} color="#EF4444" />
+                </View>
+                <Text className="text-xl font-bold text-gray-900 text-center mb-2">{t('profile.sign_out')}</Text>
+                <Text className="text-gray-500 text-center">{t('profile.sign_out_confirm')}</Text>
+             </View>
+             
+             <View className="flex-row space-x-3 gap-3">
+                <TouchableOpacity 
+                  onPress={() => setShowSignOutModal(false)}
+                  className="flex-1 bg-gray-100 p-4 rounded-xl items-center"
+                >
+                   <Text className="text-gray-700 font-bold">{t('profile.cancel')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  onPress={confirmSignOut}
+                  className="flex-1 bg-red-600 p-4 rounded-xl items-center shadow-lg shadow-red-200"
+                >
+                   <Text className="text-white font-bold">{t('profile.sign_out')}</Text>
+                </TouchableOpacity>
+             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Language Change Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showLanguageModal}
+        onRequestClose={() => setShowLanguageModal(false)}
+      >
+        <View className="flex-1 justify-center items-center bg-black/50 p-6">
+           <View className="bg-white rounded-3xl p-6 w-full max-w-sm">
+              <View className="items-center mb-6">
+                 <View className="w-16 h-16 bg-orange-100 rounded-full justify-center items-center mb-4">
+                    <FontAwesome name="refresh" size={32} color="#F97316" />
+                 </View>
+                 <Text className="text-xl font-bold text-gray-900 text-center mb-2">{t('profile.select_language')}</Text>
+                 <Text className="text-gray-500 text-center">{t('profile.restart_confirm')}</Text>
+              </View>
+
+              <View className="flex-row space-x-3 gap-3">
+                 <TouchableOpacity 
+                   onPress={() => setShowLanguageModal(false)}
+                   className="flex-1 bg-gray-100 p-4 rounded-xl items-center"
+                 >
+                    <Text className="text-gray-700 font-bold">{t('profile.cancel')}</Text>
+                 </TouchableOpacity>
+                 <TouchableOpacity 
+                   onPress={confirmLanguageChange}
+                   className="flex-1 bg-orange-600 p-4 rounded-xl items-center shadow-lg shadow-orange-200"
+                 >
+                    <Text className="text-white font-bold">{t('profile.confirm')}</Text>
+                 </TouchableOpacity>
+              </View>
+           </View>
+        </View>
+      </Modal>
+
     </View>
   );
 }
