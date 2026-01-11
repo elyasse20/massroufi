@@ -13,7 +13,6 @@ import { SmartAdviceCard } from '@/components/SmartAdviceCard'; // Added import
 import { getUserBudget } from '@/services/userService';
 import { calculateSpendingHealth, SpendingHealth } from '@/utils/financialAnalysis'; // Added import
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useColorScheme } from 'nativewind';
 import { useCallback } from 'react';
 
 const screenWidth = Dimensions.get('window').width;
@@ -42,7 +41,6 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function TabOneScreen() {
   const router = useRouter();
-  const { colorScheme } = useColorScheme(); // Hook usage
   const { user } = useAuth();
   const [listTransactions, setListTransactions] = useState<Transaction[]>([]);
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]); // For Chart/Balance
@@ -274,8 +272,8 @@ export default function TabOneScreen() {
   };
 
   return (
-    <View className="flex-1 bg-gray-50 dark:bg-slate-900">
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+    <View className="flex-1 bg-gray-50">
+      <StatusBar style="dark" />
       
       {/* Toast Notification */}
       {toast.visible && (
@@ -291,14 +289,14 @@ export default function TabOneScreen() {
       >
         <View className="flex-row justify-between items-start mb-6">
           <View>
-             <Text className="text-sm text-slate-500 dark:text-slate-400 font-medium">Good Morning,</Text>
-             <Text className="text-2xl font-bold text-slate-800 dark:text-white">
+             <Text className="text-sm text-slate-500 font-medium">Hello,</Text>
+             <Text className="text-2xl font-bold text-slate-800">
                {user?.displayName || user?.email?.split('@')[0]}
              </Text> 
           </View>
           <TouchableOpacity 
             onPress={() => router.push('/profile')}
-            className="p-1 bg-white dark:bg-slate-800 rounded-full shadow-sm"
+            className="p-1 bg-white rounded-full shadow-sm"
           >
             <FontAwesome name="user-circle" size={32} color="#3B82F6" />
           </TouchableOpacity>
@@ -338,9 +336,9 @@ export default function TabOneScreen() {
         {/* Chart Section */}
         <View className="mb-8">
           <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-lg font-bold text-slate-800 dark:text-white">Expenses Analysis</Text>
+            <Text className="text-lg font-bold text-slate-800">Expenses Analysis</Text>
             <TouchableOpacity>
-               <Text className="text-indigo-600 dark:text-indigo-400 font-semibold text-sm">This Month</Text>
+               <Text className="text-indigo-600 font-semibold text-sm">This Month</Text>
             </TouchableOpacity>
           </View>
           {chartData.length > 0 ? (

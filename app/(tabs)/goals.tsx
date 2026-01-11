@@ -2,7 +2,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { Timestamp } from 'firebase/firestore';
-import { useColorScheme } from 'nativewind';
+
 import React, { useEffect, useState } from 'react';
 import { Alert, FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
@@ -11,7 +11,7 @@ import { addTransaction } from '../../services/transactionService';
 
 export default function GoalsScreen() {
   const { user } = useAuth();
-  const { colorScheme } = useColorScheme();
+
   const [goals, setGoals] = useState<Goal[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [newGoalName, setNewGoalName] = useState('');

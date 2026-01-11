@@ -128,8 +128,8 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View className="flex-1 bg-gray-50 dark:bg-slate-900">
-      <StatusBar style="light" />
+    <View className="flex-1 bg-gray-50">
+      <StatusBar style="dark" />
       
       {/* Header with Gradient */}
       <LinearGradient
@@ -197,17 +197,17 @@ export default function ProfileScreen() {
       >
         
         {/* Budget Card */}
-        <View className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm mb-6 border border-gray-100 dark:border-slate-700">
+        <View className="bg-white rounded-3xl p-5 shadow-sm mb-6 border border-gray-100">
           <View className="flex-row items-center mb-4">
             <View className="bg-green-100 p-2 rounded-xl mr-3">
               <FontAwesome name="money" size={20} color="#16A34A" />
             </View>
-            <Text className="text-lg font-bold text-gray-800 dark:text-white">Monthly Budget</Text>
+            <Text className="text-lg font-bold text-gray-800">Monthly Budget</Text>
           </View>
           
           <View className="flex-row items-center space-x-3">
             <TextInput 
-              className="flex-1 bg-gray-50 dark:bg-slate-900 p-4 rounded-xl text-xl font-bold text-gray-900 dark:text-white border border-gray-200 dark:border-slate-600"
+              className="flex-1 bg-gray-50 p-4 rounded-xl text-xl font-bold text-gray-900 border border-gray-200"
               placeholder="0.00"
               keyboardType="numeric"
               value={budget}
@@ -225,10 +225,9 @@ export default function ProfileScreen() {
 
 
 
-        {/* Sign Out */}
         <TouchableOpacity 
           onPress={handleSignOut}
-          className="bg-red-50 dark:bg-red-900/10 p-4 rounded-3xl flex-row items-center justify-center mb-10 border border-red-100 dark:border-red-900/20"
+          className="bg-red-50 p-4 rounded-3xl flex-row items-center justify-center mb-10 border border-red-100"
         >
           <FontAwesome name="sign-out" size={20} color="#DC2626" style={{ marginRight: 8 }} />
           <Text className="text-red-600 font-bold text-lg">Sign Out</Text>

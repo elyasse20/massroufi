@@ -1,6 +1,6 @@
 import { FontAwesome } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
-import { useColorScheme } from 'nativewind';
+
 import React, { useCallback, useState } from 'react';
 import { Dimensions, ScrollView, Text, View } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
@@ -33,7 +33,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 
 export default function StatsScreen() {
   const { user } = useAuth();
-  const { colorScheme } = useColorScheme();
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -96,14 +96,14 @@ export default function StatsScreen() {
 
 
   return (
-    <View className="flex-1 bg-gray-50 dark:bg-slate-900 pt-10">
+    <View className="flex-1 bg-gray-50 pt-10">
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-        <Text className="text-3xl font-bold text-slate-800 dark:text-white px-6 py-6 mt-4">Statistics</Text>
+        <Text className="text-3xl font-bold text-slate-800 px-6 py-6 mt-4">Statistics</Text>
 
         {/* Weekly Trend Chart */}
         <View className="px-6 mb-8">
-            <Text className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-4">Spending Trend (Last 7 Days)</Text>
-            <View className="bg-white dark:bg-slate-800 rounded-3xl p-2 shadow-sm items-center overflow-hidden">
+            <Text className="text-lg font-bold text-slate-700 mb-4">Spending Trend (Last 7 Days)</Text>
+            <View className="bg-white rounded-3xl p-2 shadow-sm items-center overflow-hidden">
                 {weeklyData.some(v => v > 0) ? (
                     <LineChart
                         data={{
@@ -115,12 +115,12 @@ export default function StatsScreen() {
                         yAxisLabel=""
                         yAxisSuffix=""
                         chartConfig={{
-                            backgroundColor: colorScheme === 'dark' ? '#1E293B' : "#ffffff",
-                            backgroundGradientFrom: colorScheme === 'dark' ? '#1E293B' : "#ffffff",
-                            backgroundGradientTo: colorScheme === 'dark' ? '#1E293B' : "#ffffff",
+                            backgroundColor: "#ffffff",
+                            backgroundGradientFrom: "#ffffff",
+                            backgroundGradientTo: "#ffffff",
                             decimalPlaces: 0,
                             color: (opacity = 1) => `rgba(37, 99, 235, ${opacity})`, // Blue
-                            labelColor: (opacity = 1) => colorScheme === 'dark' ? `rgba(255, 255, 255, ${opacity})` : `rgba(107, 114, 128, ${opacity})`,
+                            labelColor: (opacity = 1) => `rgba(107, 114, 128, ${opacity})`,
                             style: { borderRadius: 16 },
                             propsForDots: {
                                 r: "4",
