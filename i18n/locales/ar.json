@@ -1,0 +1,25 @@
+{
+  "profile": {
+    "title": "الملف الشخصي",
+    "edit_name": "أدخل الاسم",
+    "monthly_budget": "الميزانية الشهرية",
+    "subscriptions": "الاشتراكات الشهرية",
+    "subscriptions_desc": "إدارة المصاريف المتكررة",
+    "sign_out": "تسجيل الخروج",
+    "language": "اللغة",
+    "select_language": "اختر اللغة",
+    "cancel": "إلغاء"
+  },
+  "navigation": {
+    "home": "الرئيسية",
+    "add": "إضافة",
+    "goals": "أهداف",
+    "stats": "إحصائيات",
+    "profile": "حسابي"
+  },
+  "common": {
+    "success": "نجاح",
+    "error": "خطأ",
+    "save": "حفظ"
+  }
+}

@@ -5,13 +5,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage'; // Changed
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
+import * as Updates from 'expo-updates';
 import { updateProfile } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, Alert, I18nManager, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
+  const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
 
 
@@ -127,6 +130,40 @@ export default function ProfileScreen() {
     ]);
   };
 
+  const changeLanguage = async (lang: string) => {
+      Alert.alert(
+          t('profile.select_language'),
+          'The app needs to restart to apply the new language. Continue?',
+          [
+              { text: t('profile.cancel'), style: 'cancel' },
+              { 
+                  text: 'OK', 
+                  onPress: async () => {
+                      try {
+                          await AsyncStorage.setItem('user-language', lang);
+                          await i18n.changeLanguage(lang);
+                          
+                          const isRTL = lang === 'ar';
+                          // Always set RTL manager to ensure it's correct before reload
+                          I18nManager.allowRTL(isRTL);
+                          I18nManager.forceRTL(isRTL);
+
+                          // Reload the app to apply changes globally
+                          try {
+                              await Updates.reloadAsync();
+                          } catch (reloadError) {
+                              console.log("Reload failed, likely dev mode:", reloadError);
+                              Alert.alert("Restart Required", "Please restart the app manually to apply changes.");
+                          }
+                      } catch (e) {
+                          console.error(e);
+                      }
+                  }
+              }
+          ]
+      );
+  };
+
   return (
     <View className="flex-1 bg-gray-50">
       <StatusBar style="dark" />
@@ -202,7 +239,7 @@ export default function ProfileScreen() {
             <View className="bg-green-100 p-2 rounded-xl mr-3">
               <FontAwesome name="money" size={20} color="#16A34A" />
             </View>
-            <Text className="text-lg font-bold text-gray-800">Monthly Budget</Text>
+            <Text className="text-lg font-bold text-gray-800">{t('profile.monthly_budget')}</Text>
           </View>
           
           <View className="flex-row items-center space-x-3">
@@ -233,21 +270,43 @@ export default function ProfileScreen() {
                  <FontAwesome name="refresh" size={20} color="#4F46E5" />
               </View>
               <View>
-                 <Text className="text-lg font-bold text-slate-800">Monthly Subscriptions</Text>
-                 <Text className="text-slate-500 text-sm">Manage recurring expenses</Text>
+                 <Text className="text-lg font-bold text-slate-800">{t('profile.subscriptions')}</Text>
+                 <Text className="text-slate-500 text-sm">{t('profile.subscriptions_desc')}</Text>
               </View>
            </View>
            <FontAwesome name="chevron-right" size={16} color="#94A3B8" />
         </TouchableOpacity>
 
-
+        {/* Language Selector */}
+        <View className="bg-white rounded-3xl p-5 shadow-sm mb-6 border border-gray-100">
+             <View className="flex-row items-center mb-4">
+                <View className="bg-orange-100 p-2 rounded-xl mr-3">
+                   <FontAwesome name="globe" size={20} color="#F97316" />
+                </View>
+                <Text className="text-lg font-bold text-gray-800">{t('profile.language')}</Text>
+             </View>
+             
+             <View className="flex-row justify-between gap-2">
+                 {(['en', 'fr', 'ar'] as const).map((lang) => (
+                    <TouchableOpacity 
+                        key={lang}
+                        onPress={() => changeLanguage(lang)}
+                        className={`flex-1 py-3 items-center rounded-xl border ${i18n.language === lang ? 'bg-orange-500 border-orange-500' : 'bg-gray-50 border-gray-200'}`}
+                    >
+                        <Text className={`font-bold ${i18n.language === lang ? 'text-white' : 'text-slate-600'}`}>
+                            {lang.toUpperCase()}
+                        </Text>
+                    </TouchableOpacity>
+                 ))}
+             </View>
+        </View>
 
         <TouchableOpacity 
           onPress={handleSignOut}
           className="bg-red-50 p-4 rounded-3xl flex-row items-center justify-center mb-10 border border-red-100"
         >
           <FontAwesome name="sign-out" size={20} color="#DC2626" style={{ marginRight: 8 }} />
-          <Text className="text-red-600 font-bold text-lg">Sign Out</Text>
+          <Text className="text-red-600 font-bold text-lg">{t('profile.sign_out')}</Text>
         </TouchableOpacity>
 
       </ScrollView>

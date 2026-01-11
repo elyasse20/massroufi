@@ -1,0 +1,25 @@
+{
+  "profile": {
+    "title": "Profil",
+    "edit_name": "Entrez votre nom",
+    "monthly_budget": "Budget Mensuel",
+    "subscriptions": "Abonnements Mensuels",
+    "subscriptions_desc": "Gérer les dépenses récurrentes",
+    "sign_out": "Se Déconnecter",
+    "language": "Langue",
+    "select_language": "Choisir la langue",
+    "cancel": "Annuler"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "add": "Ajouter",
+    "goals": "Objectifs",
+    "stats": "Stats",
+    "profile": "Profil"
+  },
+  "common": {
+    "success": "Succès",
+    "error": "Erreur",
+    "save": "Enregistrer"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "profile": {
+    "title": "Profile",
+    "edit_name": "Enter Name",
+    "monthly_budget": "Monthly Budget",
+    "subscriptions": "Monthly Subscriptions",
+    "subscriptions_desc": "Manage recurring expenses",
+    "sign_out": "Sign Out",
+    "language": "Language",
+    "select_language": "Select Language",
+    "cancel": "Cancel"
+  },
+  "navigation": {
+    "home": "Home",
+    "add": "Add",
+    "goals": "Goals",
+    "stats": "Stats",
+    "profile": "Profile"
+  },
+  "common": {
+    "success": "Success",
+    "error": "Error",
+    "save": "Save"
+  }
+}
