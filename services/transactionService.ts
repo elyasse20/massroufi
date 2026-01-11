@@ -10,6 +10,7 @@ export interface Transaction {
   description: string;
   userId: string;
   type: 'expense' | 'income';
+  color?: string;
 }
 
 const COLLECTION_NAME = 'transactions';
@@ -48,27 +49,32 @@ export const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
   }
 };
 
-export const subscribeToTransactions = (userId: string, callback: (transactions: Transaction[]) => void) => {
+export const subscribeToTransactions = (
+  userId: string, 
+  callback: (transactions: Transaction[]) => void, 
+  limitCount: number = 20, 
+  categoryFilter: string | null = null
+) => {
   let isFromCache = true;
+  const { limit } = require('firebase/firestore');
 
   const loadLocal = () => {
     storageService.getLocal(LOCAL_KEY).then((localData) => {
-      // Create a Map to deduplicate based on ID, preferring newer/synced data
-      // Actually, simple strategy: use list. Filter by userId potentially if we store all users together (but usually per device is one user)
-      // For now assume key is shared or filtered. The query filters by userId. 
-      // LOCAL_KEY is generic 'user_transactions'. Let's assume it only stores current user's data or we filter.
       if (localData) {
-         // Filter for current user just in case
-         const userTransactions = localData.filter((t: any) => t.userId === userId);
+         let userTransactions = localData.filter((t: any) => t.userId === userId);
          
+         if (categoryFilter && categoryFilter !== 'All') {
+            userTransactions = userTransactions.filter((t: any) => t.category === categoryFilter);
+         }
+
          const parsedData = userTransactions.map((t: any) => ({
           ...t,
           date: new Date(t.date)
         }));
-        // Sort
+        
         parsedData.sort((a: any, b: any) => b.date.getTime() - a.date.getTime());
         
-        callback(parsedData);
+        callback(parsedData.slice(0, limitCount));
       }
     });
   };
@@ -85,11 +91,23 @@ export const subscribeToTransactions = (userId: string, callback: (transactions:
   listeners.push(onLocalChange);
 
   // 3. Subscribe Firestore
-  const q = query(
-    collection(db, COLLECTION_NAME),
-    where('userId', '==', userId),
-    orderBy('date', 'desc')
-  );
+  let q;
+  if (categoryFilter && categoryFilter !== 'All') {
+      q = query(
+        collection(db, COLLECTION_NAME),
+        where('userId', '==', userId),
+        where('category', '==', categoryFilter),
+        orderBy('date', 'desc'),
+        limit(limitCount)
+      );
+  } else {
+      q = query(
+        collection(db, COLLECTION_NAME),
+        where('userId', '==', userId),
+        orderBy('date', 'desc'),
+        limit(limitCount)
+      );
+  }
 
   const unsubscribeFirestore = onSnapshot(q, (snapshot) => {
     isFromCache = false;
@@ -98,17 +116,21 @@ export const subscribeToTransactions = (userId: string, callback: (transactions:
       return {
         id: doc.id,
         ...data,
-        // Firestore timestamps need conversion if we want consistent Date objects across app
         date: data.date && data.date.toDate ? data.date.toDate() : new Date(data.date) 
       };
     }) as Transaction[];
     
-    // Save to local (start serializing dates as strings)
-    const dataToSave = transactions.map(t => ({
-      ...t,
-      date: (t.date as Date).toISOString()
-    }));
-    storageService.saveLocal(LOCAL_KEY, dataToSave);
+    // Save to local (start serializing dates as strings) - Merging strategy needed ideally, but overly complex for now. 
+    // We will just update local cache with what we fetched if it's "All" request, otherwise skip cache update to avoid overwriting full list with filtered list.
+    // Ideally we should merge. For now, let's only cache if NO filter is applied to keep simple.
+    if (!categoryFilter || categoryFilter === 'All') {
+        // We probably want to append/merge, but simpler: just don't overwrite if we are only fetching 5.
+        // Actually, let's keep it simple: We rely on local save from 'addTransaction' primarily for offline. 
+        // This subscription cache update is for syncing. 
+        // Let's only update cache if we are fetching a reasonable amount or logic is robust.
+        // For safely, let's skip cache over-write here to prevent data loss if we only fetch 5 items.
+        // storageService.saveLocal(LOCAL_KEY, dataToSave); 
+    }
 
     callback(transactions);
   }, (error) => {

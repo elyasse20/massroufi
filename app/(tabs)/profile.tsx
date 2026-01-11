@@ -6,13 +6,15 @@ import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { updateProfile } from 'firebase/auth';
-import { useColorScheme } from 'nativewind';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Image, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
-  const { colorScheme, toggleColorScheme } = useColorScheme();
+  const insets = useSafeAreaInsets();
+
+
   
   const [budget, setBudget] = useState('');
   const [loadingBudget, setLoadingBudget] = useState(false);
@@ -132,7 +134,8 @@ export default function ProfileScreen() {
       {/* Header with Gradient */}
       <LinearGradient
         colors={['#4F46E5', '#3B82F6']}
-        className="pt-16 pb-8 px-6 rounded-b-[40px] shadow-lg"
+        className="pb-8 px-6 rounded-b-[40px] shadow-lg"
+        style={{ paddingTop: insets.top + 20 }}
       >
         <View className="items-center">
           {/* Avatar with Edit Button */}
@@ -187,7 +190,11 @@ export default function ProfileScreen() {
         </View>
       </LinearGradient>
 
-      <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        className="flex-1 px-6 pt-6" 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 120 }}
+      >
         
         {/* Budget Card */}
         <View className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm mb-6 border border-gray-100 dark:border-slate-700">
@@ -216,30 +223,7 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Preferences */}
-        <Text className="text-gray-500 font-bold mb-3 ml-2 uppercase text-xs tracking-wider">Preferences</Text>
-        <View className="bg-white dark:bg-slate-800 rounded-3xl p-2 shadow-sm mb-6 border border-gray-100 dark:border-slate-700">
-          
-          {/* Dark Mode */}
-          <View className="flex-row justify-between items-center p-4">
-            <View className="flex-row items-center">
-              <View className="w-10 h-10 bg-gray-100 dark:bg-slate-700 rounded-full items-center justify-center mr-3">
-                <FontAwesome name="moon-o" size={20} color={colorScheme === 'dark' ? 'white' : 'black'} />
-              </View>
-              <View>
-                <Text className="text-gray-900 dark:text-white font-semibold text-base">Dark Mode</Text>
-                <Text className="text-gray-400 text-xs">Easier on the eyes</Text>
-              </View>
-            </View>
-            <Switch 
-              value={colorScheme === 'dark'} 
-              onValueChange={toggleColorScheme}
-              trackColor={{ false: "#E2E8F0", true: "#3B82F6" }}
-              thumbColor={colorScheme === 'dark' ? "#EFF6FF" : "#f4f3f4"}
-            />
-          </View>
 
-        </View>
 
         {/* Sign Out */}
         <TouchableOpacity 

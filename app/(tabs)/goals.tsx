@@ -26,6 +26,10 @@ export default function GoalsScreen() {
   const [goalToAddFunds, setGoalToAddFunds] = useState<Goal | null>(null);
   const [addFundsAmount, setAddFundsAmount] = useState('');
 
+  // Celebration State
+  const [celebrationVisible, setCelebrationVisible] = useState(false);
+  const [celebratedGoal, setCelebratedGoal] = useState<Goal | null>(null);
+
   useEffect(() => {
     if (!user) return;
     const unsubscribe = subscribeToGoals(user.uid, (data) => {
@@ -171,6 +175,13 @@ export default function GoalsScreen() {
       ));
 
       showToast(`Added ${amount} DH to ${goalToAddFunds.name}! 💰`);
+      
+      // Check for completion
+      if (goalToAddFunds.savedAmount + amount >= goalToAddFunds.targetAmount) {
+          setCelebratedGoal(goalToAddFunds);
+          setCelebrationVisible(true);
+      }
+
       setAddFundsModalVisible(false);
       setGoalToAddFunds(null);
       setAddFundsAmount('');
@@ -183,14 +194,23 @@ export default function GoalsScreen() {
     const progress = Math.min(item.savedAmount / item.targetAmount, 1);
     const percentage = Math.round(progress * 100);
 
+    const isCompleted = item.savedAmount >= item.targetAmount;
+
     return (
-      <View style={styles.card}>
+      <View style={[styles.card, isCompleted && styles.cardCompleted]}>
         <View style={styles.cardHeader}>
-          <View style={styles.iconContainer}>
-            <FontAwesome name="bullseye" size={20} color="#6366F1" />
+          <View style={[styles.iconContainer, isCompleted && styles.iconContainerCompleted]}>
+            <FontAwesome name={isCompleted ? "trophy" : "bullseye"} size={20} color={isCompleted ? "#D97706" : "#6366F1"} />
           </View>
           <View style={{flex: 1, marginRight: 8}}>
-             <Text style={styles.goalName}>{item.name}</Text>
+             <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Text style={styles.goalName}>{item.name}</Text>
+                {isCompleted && (
+                    <View style={styles.completedBadge}>
+                        <Text style={styles.completedText}>Completed</Text>
+                    </View>
+                )}
+             </View>
              <Text style={styles.goalTarget}>Target: {item.targetAmount} DH</Text>
           </View>
           
@@ -201,20 +221,22 @@ export default function GoalsScreen() {
             <TouchableOpacity onPress={() => handleDeleteGoal(item)} style={styles.actionButton}>
               <FontAwesome name="trash" size={14} color="#EF4444" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleAddFunds(item)} style={[styles.addButtonSmall, {marginLeft: 4}]}>
-               <FontAwesome name="plus" size={12} color="white" />
-            </TouchableOpacity>
+            {!isCompleted && (
+                <TouchableOpacity onPress={() => handleAddFunds(item)} style={[styles.addButtonSmall, {marginLeft: 4}]}>
+                   <FontAwesome name="plus" size={12} color="white" />
+                </TouchableOpacity>
+            )}
           </View>
         </View>
         
         <View style={styles.progressSection}>
           <View style={styles.progressTextRow}>
-            <Text style={styles.savedAmount}>{item.savedAmount} DH</Text>
-            <Text style={styles.percentage}>{percentage}%</Text>
+            <Text style={[styles.savedAmount, isCompleted && {color: '#D97706'}]}>{item.savedAmount} DH</Text>
+            <Text style={[styles.percentage, isCompleted && {color: '#D97706'}]}>{percentage}%</Text>
           </View>
           <View style={styles.progressBarContainer}>
             <LinearGradient
-              colors={['#6366F1', '#8B5CF6']}
+              colors={isCompleted ? ['#F59E0B', '#D97706'] : ['#6366F1', '#8B5CF6']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={[styles.progressBar, { width: `${percentage}%` }]}
@@ -422,6 +444,57 @@ export default function GoalsScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Celebration Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={celebrationVisible}
+        onRequestClose={() => setCelebrationVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalView, { backgroundColor: '#F0F9FF', borderColor: '#3B82F6', borderWidth: 2 }]}>
+            <View style={{ alignItems: 'center' }}>
+               <Text style={{ fontSize: 60, marginBottom: 10 }}>🎉🏆🎉</Text>
+               <Text style={[styles.modalTitle, { color: '#2563EB', fontSize: 26 }]}>CONGRATULATIONS!</Text>
+               <Text style={[styles.modalSubtitle, { marginBottom: 20 }]}>
+                 You've reached your goal:
+               </Text>
+               <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1E293B', marginBottom: 20, textAlign: 'center' }}>
+                 "{celebratedGoal?.name}"
+               </Text>
+               <Text style={{ fontSize: 16, color: '#64748B', textAlign: 'center', marginBottom: 30 }}>
+                  Fantastic job! Your hard work has paid off. Time to enjoy the reward! 🌟
+               </Text>
+
+                <TouchableOpacity
+                  style={[styles.buttonSave, { width: '100%', marginTop: 10 }]}
+                  onPress={() => setCelebrationVisible(false)}
+                >
+                  <LinearGradient
+                     colors={['#FBBF24', '#B45309']} 
+                     start={{ x: 0, y: 0 }}
+                     end={{ x: 1, y: 1 }}
+                     style={[styles.buttonSaveGradient, { paddingVertical: 16 }]}
+                  >
+                     <Text style={[
+                       styles.buttonSaveText, 
+                       { 
+                         fontSize: 20, 
+                         fontWeight: 'bold',
+                         textTransform: 'uppercase', 
+                         letterSpacing: 2,
+                         color: '#FFFFFF',
+                         zIndex: 10,
+                         elevation: 5 // Ensure text is above gradient on Android
+                       }
+                     ]}>Awesome!</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -509,6 +582,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F1F5F9',
   },
+  cardCompleted: {
+    borderColor: '#F59E0B',
+    borderWidth: 2,
+    backgroundColor: '#FFFBEB', // Light yellow hint
+  },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -522,6 +600,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
+  },
+  iconContainerCompleted: {
+    backgroundColor: '#FEF3C7',
+  },
+  completedBadge: {
+    backgroundColor: '#D97706',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+    marginLeft: 8,
+  },
+  completedText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
   goalName: {
     fontSize: 16,

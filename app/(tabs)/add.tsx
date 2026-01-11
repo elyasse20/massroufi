@@ -17,9 +17,16 @@ export default function AddExpenseScreen() {
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
+  const [color, setColor] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
+  
+  // Update category handler to accept optional color
+  const handleSelectCategory = (newCategory: string, newColor?: string) => {
+    setCategory(newCategory);
+    setColor(newColor);
+  };
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ visible: true, message, type });
@@ -81,7 +88,8 @@ export default function AddExpenseScreen() {
         category,
         date: Timestamp.now(),
         userId: user.uid,
-        type: 'expense' // Defaulting to expense for now
+        type: 'expense',
+        color: color // Pass selected color
       });
 
       // Budget Check Logic (Non-blocking)
@@ -103,6 +111,7 @@ export default function AddExpenseScreen() {
       setAmount('');
       setDescription('');
       setCategory('');
+      setColor(undefined);
       
       // Delay navigation back so user sees the toast
       setTimeout(() => {
@@ -167,7 +176,7 @@ export default function AddExpenseScreen() {
             />
           </View>
 
-          <CategoryPicker selectedCategory={category} onSelectCategory={setCategory} />
+          <CategoryPicker selectedCategory={category} onSelectCategory={handleSelectCategory} />
 
           <TouchableOpacity
             onPress={handleSave}

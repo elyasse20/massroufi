@@ -44,12 +44,17 @@ export default function TabOneScreen() {
   const router = useRouter();
   const { colorScheme } = useColorScheme(); // Hook usage
   const { user } = useAuth();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [listTransactions, setListTransactions] = useState<Transaction[]>([]);
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]); // For Chart/Balance
   const [loading, setLoading] = useState(true);
   const [totalBalance, setTotalBalance] = useState(0);
   const [monthlyBudget, setMonthlyBudget] = useState(0); // Added budget state
   const [chartData, setChartData] = useState<any[]>([]);
   const [spendingHealth, setSpendingHealth] = useState<SpendingHealth | null>(null); // Added state
+  
+  // Pagination & Filtering State
+  const [limit, setLimit] = useState(5);
+  const [filterCategory, setFilterCategory] = useState<string>('All');
 
   // Fetch Budget on Focus
   useFocusEffect(
@@ -65,19 +70,33 @@ export default function TabOneScreen() {
   useEffect(() => {
     if (!user) return;
 
-    const unsubscribe = subscribeToTransactions(user.uid, (data) => {
-      setTransactions(data);
-      // We don't calculate financials here anymore, strictly dependent on data change
+    setLoading(true);
+    setLoading(true);
+    // Subscription for the List (Filtered & Paginated)
+    const unsubscribeList = subscribeToTransactions(user.uid, (data) => {
+      // Filter out automated Savings transactions from the list view
+      const filteredData = data.filter(t => t.category !== 'Savings');
+      setListTransactions(filteredData);
       setLoading(false);
-    });
+    }, limit, filterCategory === 'All' ? null : filterCategory);
 
-    return () => unsubscribe();
-  }, [user]);
+    // Subscription for Global Financials (All Data, High Limit)
+    // We use a high limit (e.g., 1000) to ensure we get "all" meaningful history for charts/balance
+    const unsubscribeGlobal = subscribeToTransactions(user.uid, (data) => {
+       setAllTransactions(data);
+    }, 1000, null);
+
+    return () => {
+        unsubscribeList();
+        unsubscribeGlobal();
+    };
+  }, [user, limit, filterCategory]);
 
   // Recalculate Financials when transactions or budget changes
+  // Recalculate Financials when ALL transactions or budget changes
   useEffect(() => {
-     calculateFinancials(transactions, monthlyBudget);
-  }, [transactions, monthlyBudget]);
+     calculateFinancials(allTransactions, monthlyBudget);
+  }, [allTransactions, monthlyBudget]);
 
 
   const calculateFinancials = (data: Transaction[], budget: number) => {
@@ -95,15 +114,18 @@ export default function TabOneScreen() {
     const health = calculateSpendingHealth(budget, expensesTotal);
     setSpendingHealth(health);
 
-    const expensesByCategory: Record<string, number> = {};
+    const expensesByCategory: Record<string, { amount: number, color?: string }> = {};
     data.filter(t => t.type !== 'income').forEach(t => {
-      expensesByCategory[t.category] = (expensesByCategory[t.category] || 0) + t.amount;
+      if (!expensesByCategory[t.category]) {
+          expensesByCategory[t.category] = { amount: 0, color: t.color || CATEGORY_COLORS[t.category] };
+      }
+      expensesByCategory[t.category].amount += t.amount;
     });
 
     const newChartData = Object.keys(expensesByCategory).map(cat => ({
       name: cat,
-      population: expensesByCategory[cat],
-      color: CATEGORY_COLORS[cat] || '#808080',
+      population: expensesByCategory[cat].amount,
+      color: expensesByCategory[cat].color || '#808080',
       legendFontColor: "#4B5563",
       legendFontSize: 12
     }));
@@ -112,7 +134,7 @@ export default function TabOneScreen() {
   };
 
   const generateReport = async () => {
-    if (transactions.length === 0) {
+    if (allTransactions.length === 0) {
       Alert.alert('No Data', 'No transactions to generate report for.');
       return;
     }
@@ -151,7 +173,7 @@ export default function TabOneScreen() {
                 </tr>
               </thead>
               <tbody>
-                ${transactions.map(t => `
+                ${allTransactions.map(t => `
                   <tr>
                     <td>${t.date && 'toDate' in (t.date as any) ? (t.date as any).toDate().toLocaleDateString() : 'N/A'}</td>
                     <td>${t.description}</td>
@@ -340,16 +362,39 @@ export default function TabOneScreen() {
           )}
         </View>
 
-        {/* Recent Transactions List */}
+          {/* Recent Transactions List */}
         <View className="mb-10">
           <View className="flex-row justify-between items-center mb-4">
             <Text className="text-lg font-bold text-slate-800 dark:text-white">Recent Transactions</Text>
-             <TouchableOpacity>
+             <TouchableOpacity onPress={() => { setLimit(20); setFilterCategory('All'); }}>
                <Text className="text-indigo-600 dark:text-indigo-400 font-semibold text-sm">See All</Text>
             </TouchableOpacity>
           </View>
+
+          {/* Category Filter Pills */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
+            {['All', 'Food', 'Transport', 'Shopping', 'Bills', 'Fun', 'Health', 'Education', 'Other'].map((cat) => (
+              <TouchableOpacity
+                key={cat}
+                onPress={() => setFilterCategory(cat)}
+                className={`mr-3 px-4 py-2 rounded-full border ${
+                  filterCategory === cat
+                    ? 'bg-blue-600 border-blue-600'
+                    : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700'
+                }`}
+              >
+                <Text
+                  className={`${
+                    filterCategory === cat ? 'text-white' : 'text-slate-600 dark:text-slate-300'
+                  } font-medium`}
+                >
+                  {cat}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
           
-          {transactions.map((t) => (
+          {listTransactions.map((t) => (
             <TouchableOpacity 
                 key={t.id} 
                 onPress={() => openEditModal(t)}
@@ -357,12 +402,19 @@ export default function TabOneScreen() {
             >
               <View 
                 className="w-12 h-12 rounded-xl justify-center items-center mr-4"
-                style={{ backgroundColor: CATEGORY_COLORS[t.category] + '20' }}
+                style={{ backgroundColor: (t.color || CATEGORY_COLORS[t.category] || '#9CA3AF') + '20' }}
               >
+                 {/* Use color for icon too if custom */}
                  <Text style={{fontSize: 20}}>
-                    {t.category === 'Food' ? '🍔' : 
-                     t.category === 'Transport' ? '🚗' :
-                     t.category === 'Shopping' ? '🛍️' : '📄'}
+                     {/* If it's a known category use the emoji, else generic or maybe first letter? */}
+                    {['Food','Transport','Shopping','Bills','Fun','Health','Education'].includes(t.category) ? (
+                        t.category === 'Food' ? '🍔' : 
+                        t.category === 'Transport' ? '🚗' :
+                        t.category === 'Shopping' ? '🛍️' : 
+                        t.category === 'Bills' ? '📄' :
+                        t.category === 'Fun' ? '🎉' :
+                        t.category === 'Health' ? '💊' : '📚'
+                    ) : '🔹'}
                  </Text>
               </View>
               <View className="flex-1">
@@ -383,6 +435,14 @@ export default function TabOneScreen() {
               </Text>
             </TouchableOpacity>
           ))}
+
+          {/* Load More Button */}
+          <TouchableOpacity 
+            onPress={() => setLimit(l => l + 5)}
+            className="mt-2 py-3 bg-gray-100 dark:bg-slate-800 rounded-xl items-center"
+          >
+             <Text className="text-slate-600 dark:text-slate-300 font-semibold">Load More</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 

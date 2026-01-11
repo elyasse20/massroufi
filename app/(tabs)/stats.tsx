@@ -1,113 +1,181 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Dimensions, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
+import { useFocusEffect } from 'expo-router';
+import { useColorScheme } from 'nativewind';
+import React, { useCallback, useState } from 'react';
+import { Dimensions, ScrollView, Text, View } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
-import { CATEGORIES } from '../../constants/categories';
-import { useExpenses } from '../../context/ExpenseContext';
+import { useAuth } from '../../context/AuthContext';
+import { subscribeToTransactions, Transaction } from '../../services/transactionService';
 
 const screenWidth = Dimensions.get('window').width;
 
-export default function StatsScreen() {
-  const { expenses, totalExpenses } = useExpenses();
+const CATEGORY_COLORS: Record<string, string> = {
+  'Food': '#F87171',
+  'Transport': '#60A5FA',
+  'Shopping': '#FBBF24',
+  'Bills': '#34D399',
+  'Fun': '#A78BFA',
+  'Health': '#F472B6',
+  'Education': '#818CF8',
+  'Other': '#9CA3AF'
+};
 
-  // 1. Weekly Spending Text Logic (Last 7 days)
+const CATEGORY_ICONS: Record<string, string> = {
+    'Food': 'cutlery',
+    'Transport': 'bus',
+    'Shopping': 'shopping-bag',
+    'Bills': 'file-text-o',
+    'Fun': 'gamepad',
+    'Health': 'medkit',
+    'Education': 'book',
+    'Other': 'ellipsis-h'
+};
+
+export default function StatsScreen() {
+  const { user } = useAuth();
+  const { colorScheme } = useColorScheme();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useFocusEffect(
+    useCallback(() => {
+        if (!user) return;
+        
+        // Fetch ALL transactions for stats (limit 1000 to get good history)
+        const unsubscribe = subscribeToTransactions(user.uid, (data) => {
+            setTransactions(data);
+            setLoading(false);
+        }, 1000);
+
+        return () => unsubscribe();
+    }, [user])
+  );
+
+  // Filter only expenses
+  const expenses = transactions.filter(t => t.type === 'expense');
+
+  // 1. Weekly Spending (Last 7 Days)
   const last7Days = [...Array(7)].map((_, i) => {
     const d = new Date();
-    d.setDate(d.getDate() - i);
+    d.setDate(d.getDate() - (6 - i)); // -6, -5, ... -0 (Today)
     return d.toISOString().split('T')[0];
-  }).reverse();
+  });
 
-  // Group by date
-  const expensesByDate = expenses.reduce((acc, exp) => {
-    const dateStr = new Date(exp.date).toISOString().split('T')[0];
-    acc[dateStr] = (acc[dateStr] || 0) + exp.amount;
-    return acc;
+  const expensesByDate = expenses.reduce((acc, t) => {
+      const dateStr = t.date instanceof Date 
+        ? t.date.toISOString().split('T')[0] 
+        : new Date(t.date as any).toISOString().split('T')[0]; // Handle timestamp case
+      
+      acc[dateStr] = (acc[dateStr] || 0) + t.amount;
+      return acc;
   }, {} as Record<string, number>);
 
   const weeklyData = last7Days.map(date => expensesByDate[date] || 0);
   const weeklyLabels = last7Days.map(date => {
       const d = new Date(date);
-      return d.toLocaleDateString('fr-FR', { weekday: 'short' });
+      return d.toLocaleDateString('en-US', { weekday: 'short' });
   });
 
   // 2. Category Breakdown
-  const categoryData = CATEGORIES.map(cat => {
-      const total = expenses.filter(e => e.categoryId === cat.id).reduce((sum, e) => sum + e.amount, 0);
-      return {
-          ...cat,
-          total,
-          percent: totalExpenses > 0 ? total / totalExpenses : 0
-      };
-  }).sort((a, b) => b.total - a.total); // Sort by highest spend
+  const totalExpenses = expenses.reduce((sum, t) => sum + t.amount, 0);
+  
+  const categoryTotals = expenses.reduce((acc, t) => {
+      acc[t.category] = (acc[t.category] || 0) + t.amount;
+      return acc;
+  }, {} as Record<string, number>);
+
+  const categoryData = Object.keys(categoryTotals)
+    .map(cat => ({
+        name: cat,
+        total: categoryTotals[cat],
+        percent: totalExpenses > 0 ? categoryTotals[cat] / totalExpenses : 0,
+        color: CATEGORY_COLORS[cat] || '#9CA3AF',
+        icon: CATEGORY_ICONS[cat] || 'tag'
+    }))
+    .sort((a, b) => b.total - a.total);
+
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-slate-900">
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        <Text className="text-3xl font-bold text-gray-900 dark:text-white px-6 py-6">Statistiques</Text>
+    <View className="flex-1 bg-gray-50 dark:bg-slate-900 pt-10">
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+        <Text className="text-3xl font-bold text-slate-800 dark:text-white px-6 py-6 mt-4">Statistics</Text>
 
         {/* Weekly Trend Chart */}
         <View className="px-6 mb-8">
-            <Text className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">Dépenses (7 derniers jours)</Text>
+            <Text className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-4">Spending Trend (Last 7 Days)</Text>
             <View className="bg-white dark:bg-slate-800 rounded-3xl p-2 shadow-sm items-center overflow-hidden">
-                <LineChart
-                    data={{
-                    labels: weeklyLabels,
-                    datasets: [{ data: weeklyData }]
-                    }}
-                    width={screenWidth - 60} // from react-native
-                    height={220}
-                    yAxisLabel=""
-                    yAxisSuffix="dh"
-                    chartConfig={{
-                        backgroundColor: "#ffffff",
-                        backgroundGradientFrom: "#ffffff",
-                        backgroundGradientTo: "#ffffff",
-                        decimalPlaces: 0,
-                        color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`, // Blue
-                        labelColor: (opacity = 1) => `rgba(107, 114, 128, ${opacity})`,
-                        style: { borderRadius: 16 },
-                        propsForDots: {
-                            r: "5",
-                            strokeWidth: "2",
-                            stroke: "#2563EB"
-                        }
-                    }}
-                    bezier
-                    style={{
-                        marginVertical: 8,
-                        borderRadius: 16
-                    }}
-                />
+                {weeklyData.some(v => v > 0) ? (
+                    <LineChart
+                        data={{
+                        labels: weeklyLabels,
+                        datasets: [{ data: weeklyData }]
+                        }}
+                        width={screenWidth - 60}
+                        height={220}
+                        yAxisLabel=""
+                        yAxisSuffix=""
+                        chartConfig={{
+                            backgroundColor: colorScheme === 'dark' ? '#1E293B' : "#ffffff",
+                            backgroundGradientFrom: colorScheme === 'dark' ? '#1E293B' : "#ffffff",
+                            backgroundGradientTo: colorScheme === 'dark' ? '#1E293B' : "#ffffff",
+                            decimalPlaces: 0,
+                            color: (opacity = 1) => `rgba(37, 99, 235, ${opacity})`, // Blue
+                            labelColor: (opacity = 1) => colorScheme === 'dark' ? `rgba(255, 255, 255, ${opacity})` : `rgba(107, 114, 128, ${opacity})`,
+                            style: { borderRadius: 16 },
+                            propsForDots: {
+                                r: "4",
+                                strokeWidth: "2",
+                                stroke: "#2563EB"
+                            }
+                        }}
+                        bezier
+                        style={{
+                            marginVertical: 8,
+                            borderRadius: 16
+                        }}
+                    />
+                ) : (
+                    <View className="h-48 justify-center items-center">
+                        <Text className="text-slate-400">No spending data for this week</Text>
+                    </View>
+                )}
             </View>
         </View>
 
         {/* Top Spending Categories */}
         <View className="px-6">
-            <Text className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">Dépenses par catégorie</Text>
-            {categoryData.filter(c => c.total > 0).map(cat => (
-                <View key={cat.id} className="mb-4 bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm">
-                    <View className="flex-row justify-between items-center mb-2">
-                        <View className="flex-row items-center gap-3">
-                            <View className={`w-10 h-10 rounded-full items-center justify-center ${cat.color.split(' ')[0]}`}>
-                                <FontAwesome name={cat.icon as any} size={16} className={cat.color.split(' ')[1]} />
+            <Text className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-4">Expenses by Category</Text>
+            {categoryData.length > 0 ? (
+                categoryData.map(cat => (
+                    <View key={cat.name} className="mb-4 bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm">
+                        <View className="flex-row justify-between items-center mb-2">
+                            <View className="flex-row items-center gap-3">
+                                <View 
+                                    className="w-10 h-10 rounded-full items-center justify-center"
+                                    style={{ backgroundColor: cat.color + '20' }} // 20% opacity using hex assumption, simple trick
+                                >
+                                    <FontAwesome name={cat.icon as any} size={16} color={cat.color} />
+                                </View>
+                                <Text className="font-bold text-slate-700 dark:text-slate-200 text-base">{cat.name}</Text>
                             </View>
-                            <Text className="font-bold text-gray-700 dark:text-gray-200">{cat.name}</Text>
+                            <Text className="font-bold text-slate-900 dark:text-white text-base">{cat.total.toFixed(0)} DH</Text>
                         </View>
-                        <Text className="font-bold text-gray-900 dark:text-white">{cat.total.toFixed(0)} DH</Text>
+                        {/* Progress Bar */}
+                        <View className="h-2 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden mt-1">
+                            <View 
+                                className="h-full rounded-full" 
+                                style={{ width: `${cat.percent * 100}%`, backgroundColor: cat.color }} 
+                            />
+                        </View>
                     </View>
-                    {/* Progress Bar */}
-                    <View className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                        <View 
-                            className="h-full bg-blue-500 rounded-full" 
-                            style={{ width: `${cat.percent * 100}%` }} 
-                        />
-                    </View>
+                ))
+            ) : (
+                <View className="items-center py-10">
+                    <Text className="text-slate-400">No expenses recorded yet.</Text>
                 </View>
-            ))}
-            {categoryData.every(c => c.total === 0) && (
-                <Text className="text-gray-500 text-center mt-4">Aucune donnée disponible</Text>
             )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
