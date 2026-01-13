@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, onSnapshot, query, where } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, onSnapshot, query, setDoc, where } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
 export interface Subscription {
@@ -39,6 +39,19 @@ export const deleteSubscription = async (id: string) => {
     await deleteDoc(doc(db, COLLECTION_NAME, id));
   } catch (e) {
     console.error("Error deleting subscription", e);
+    throw e;
+  }
+};
+
+export const updateSubscription = async (sub: Subscription) => {
+  console.log("Updating subscription:", sub);
+  if (!sub.id) return;
+  try {
+    const subRef = doc(db, COLLECTION_NAME, sub.id);
+    const { id, ...data } = sub; // Remove ID from data payload
+    await setDoc(subRef, data, { merge: true });
+  } catch (e) {
+    console.error("Error updating subscription", e);
     throw e;
   }
 };
